@@ -1,0 +1,228 @@
+/* ================= NAVBAR BASE ================= */
+.navbar {
+  width: 100%;
+  background: rgba(17,17,17,0.85); /* semi-transparent black */
+  backdrop-filter: blur(10px); /* frosted glass effect */
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  color: #fff;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Add shadow when scrolling (optional) */
+.navbar.scrolled {
+  background: rgba(17,17,17,0.95);
+  box-shadow: 0 2px 15px rgba(0,0,0,0.5);
+}
+
+.navbar-container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+/* ================= LOGO ================= */
+.logo {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0d6efd;
+  text-decoration: none;
+}
+
+/* ================= SEARCH ================= */
+.nav-search {
+  position: relative;
+  flex: 1;
+  margin: 0 20px;
+}
+
+.nav-search input {
+  width: 100%;
+  max-width: 320px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.nav-search input::placeholder {
+  color: #bbb;
+}
+
+.nav-search input:focus {
+  outline: none;
+  border-color: #0d6efd;
+  background: rgba(255,255,255,0.1);
+}
+
+/* SEARCH DROPDOWN */
+.search-dropdown {
+  position: absolute;
+  top: 46px;
+  width: 100%;
+  max-width: 320px;
+  background: rgba(34,34,34,0.95);
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+  overflow: hidden;
+  z-index: 999;
+}
+
+.search-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  color: #fff;
+  transition: background 0.2s ease;
+}
+
+.search-item:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+.badge {
+  background: #0d6efd;
+  color: white;
+  font-size: 11px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  margin-right: 8px;
+}
+
+/* ================= MENU ================= */
+.nav-menu {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-item {
+  position: relative;
+}
+
+.nav-link {
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  transition: color 0.2s ease;
+}
+
+.nav-link:hover {
+  color: #0d6efd;
+}
+
+/* ================= CATEGORY DROPDOWN ================= */
+.category-dropdown {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  min-width: 220px;
+  background: rgba(34,34,34,0.95);
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+  z-index: 999;
+}
+
+.category-dropdown.scrollable {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.dropdown-item {
+  padding: 12px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #fff;
+  transition: background 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+/* ================= ACCOUNT DROPDOWN ================= */
+.account {
+  cursor: pointer;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  background: rgba(34,34,34,0.95);
+  min-width: 160px;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+  padding: 10px;
+}
+
+.dropdown-menu button {
+  width: 100%;
+  padding: 8px;
+  background: #dc3545;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s ease;
+}
+
+.dropdown-menu button:hover {
+  background: #c82333;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 900px) {
+  .nav-search {
+    order: 3;
+    width: 100%;
+    margin: 12px 0 0;
+  }
+
+  .nav-search input {
+    max-width: 100%;
+  }
+
+  .nav-menu {
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+}
+.theme-select-wrapper {
+  margin-right: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.theme-select {
+  padding: 4px 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background-color: var(--btn-bg);
+  color: var(--btn-text);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.theme-select:focus {
+  outline: none;
+  border-color: #007bff;
+}

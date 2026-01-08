@@ -1,0 +1,395 @@
+/* ================= GLOBAL ================= */
+.homepage {
+  width: 100%;
+  padding: 0 20px 60px;
+  background: linear-gradient(to bottom, #f8fafc, #eef2ff);
+  font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+/* ================= WELCOME USER ================= */
+.welcome-msg {
+  max-width: 1100px;
+  margin: 25px auto 35px;
+  padding: 18px 26px;
+  background: linear-gradient(135deg, #4f46e5, #6366f1, #22c55e);
+  border-radius: 16px;
+  color: #ffffff;
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.18);
+  position: relative;
+  overflow: hidden;
+  animation: fadeSlide 0.6s ease;
+}
+
+.welcome-msg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.18),
+    transparent
+  );
+  animation: shine 6s infinite;
+}
+
+.welcome-msg h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ================= CAROUSEL ================= */
+.carousel-container {
+  max-width: 900px;
+  margin: 0 auto 55px;
+  position: relative;
+  padding: 12px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+}
+
+.carousel-img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 16px;
+  transition: transform 0.6s ease, filter 0.4s ease;
+}
+
+.carousel-container:hover .carousel-img {
+  transform: scale(1.05);
+  filter: brightness(1.05);
+}
+
+/* buttons */
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(15, 23, 42, 0.7);
+  color: #fff;
+  border: none;
+  width: 42px;
+  height: 42px;
+  font-size: 22px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s ease;
+}
+
+.carousel-btn.left {
+  left: 15px;
+}
+
+.carousel-btn.right {
+  right: 15px;
+}
+
+.carousel-btn:hover {
+  background: #4f46e5;
+  transform: translateY(-50%) scale(1.1);
+}
+
+/* ================= CATEGORIES ================= */
+.categories {
+  max-width: 1200px;
+  margin: 60px auto;
+  text-align: center;
+}
+
+.categories-header h2 {
+  font-size: 2.3rem;
+  margin-bottom: 35px;
+  color: #0f172a;
+}
+
+.categories-grid {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+
+.category-card {
+  min-width: 220px;
+  padding: 28px 35px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #ffffff, #f1f5f9);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.35s ease;
+}
+
+.category-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.16);
+}
+
+.category-card h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: #4f46e5;
+  font-weight: 600;
+}
+
+/* ================= COURSES ================= */
+.popular-courses {
+  max-width: 1250px;
+  margin: 70px auto;
+  text-align: center;
+}
+
+.popular-courses h2 {
+  font-size: 2.3rem;
+  margin-bottom: 40px;
+  color: #0f172a;
+}
+
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 28px;
+  padding: 0 10px;
+}
+
+.course-card {
+  background: #ffffff;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.1);
+  transition: all 0.35s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.course-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.15);
+}
+
+.course-thumb {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.course-card:hover .course-thumb {
+  transform: scale(1.06);
+}
+
+.course-info {
+  padding: 18px 20px;
+  text-align: left;
+}
+
+.course-info h3 {
+  margin: 0 0 10px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.course-info p {
+  font-size: 0.9rem;
+  color: #475569;
+  margin-bottom: 10px;
+}
+
+.course-info span {
+  font-weight: 700;
+  color: #f59e0b;
+}
+
+/* ================= TAGS ================= */
+.course-tags {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  z-index: 5;
+}
+
+.tag {
+  padding: 4px 9px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: 7px;
+  text-transform: uppercase;
+  color: #fff;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.tag.bestseller {
+  background: linear-gradient(135deg, #ff416c, #ff4b2b);
+}
+
+.tag.new {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+
+.tag.trending {
+  background: linear-gradient(135deg, #f59e0b, #facc15);
+  color: #1f2933;
+}
+
+/* ================= AD BANNER ================= */
+.ad-banner {
+  max-width: 1100px;
+  height: 140px;
+  margin: 70px auto 0;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #e0e7ff, #f1f5ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* ================= ANIMATIONS ================= */
+@keyframes fadeSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shine {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+  .carousel-img {
+    height: 220px;
+  }
+
+  .welcome-msg h3 {
+    font-size: 16px;
+    text-align: center;
+  }
+
+  .categories-grid {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .carousel-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .course-info h3 {
+    font-size: 1.05rem;
+  }
+}
+/* ================= STUDENT THEME ================= */
+body.student-theme {
+  background: linear-gradient(to bottom, #f8fafc, #eef2ff);
+  color: #0f172a;
+}
+
+/* Welcome */
+body.student-theme .welcome-msg {
+  background: linear-gradient(135deg, #6366f1, #22c55e);
+}
+
+/* Categories */
+body.student-theme .category-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+}
+
+body.student-theme .category-card h3 {
+  color: #1e293b;
+}
+
+/* Courses */
+body.student-theme .course-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+}
+
+body.student-theme .course-card:hover {
+  transform: translateY(-6px);
+}
+
+/* Tags */
+body.student-theme .tag.bestseller {
+  background: linear-gradient(135deg, #f97316, #fb923c);
+}
+
+body.student-theme .tag.new {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+
+body.student-theme .tag.trending {
+  background: linear-gradient(135deg, #eab308, #facc15);
+}
+/* ================= INSTRUCTOR THEME ================= */
+body.instructor-theme {
+  background: linear-gradient(to bottom, #020617, #020617);
+  color: #e5e7eb;
+}
+
+/* Welcome */
+body.instructor-theme .welcome-msg {
+  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7);
+}
+
+/* Categories */
+body.instructor-theme .category-card {
+  background: #020617;
+  border: 1px solid #334155;
+}
+
+body.instructor-theme .category-card h3 {
+  color: #c7d2fe;
+}
+
+/* Courses */
+body.instructor-theme .course-card {
+  background: #020617;
+  border: 1px solid #334155;
+}
+
+body.instructor-theme .course-info h3 {
+  color: #f8fafc;
+}
+
+/* Tags */
+body.instructor-theme .tag.bestseller {
+  background: linear-gradient(135deg, #dc2626, #991b1b);
+}
+
+body.instructor-theme .tag.new {
+  background: linear-gradient(135deg, #0ea5e9, #0369a1);
+}
+
+body.instructor-theme .tag.trending {
+  background: linear-gradient(135deg, #facc15, #eab308);
+  color: #020617;
+}

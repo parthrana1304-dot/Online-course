@@ -1,0 +1,144 @@
+.catalog-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: auto;
+  font-family: 'Arial', sans-serif;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.filters input,
+.filters select {
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.course-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.course-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  background: #fff;
+}
+
+.course-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+.thumbnail-wrapper {
+  position: relative;
+}
+
+.thumbnail-wrapper img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+}
+
+.preview-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: #f37254;
+  color: #fff;
+  padding: 2px 6px;
+  font-size: 12px;
+  border-radius: 4px;
+}
+
+.course-info {
+  padding: 12px;
+}
+
+.course-info h3 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+}
+
+.course-info p {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.teacher, .subject, .level, .price, .rating {
+  font-weight: 500;
+}
+
+.enroll-btn {
+  margin-top: 10px;
+  width: 100%;
+  padding: 8px;
+  background: #f37254;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.enroll-btn:hover {
+  background: #e8603c;
+}
+
+.loading {
+  text-align: center;
+  font-size: 18px;
+  padding: 40px 0;
+}
+.progress-bar {
+  height: 8px;
+  background: #eee;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #4caf50;
+}
+
+/* Short description */
+.short-description {
+  font-size: 0.9rem;
+  color: #555;
+  margin: 8px 0;
+  height: 40px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+
+.tag {
+  color: white;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+}

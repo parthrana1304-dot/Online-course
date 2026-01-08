@@ -1,0 +1,271 @@
+/* ================= LIGHT THEME VARIABLES ================= */
+:root {
+  --bg-color: #f9f9f9;
+  --text-color: #222;
+  --text-secondary: #555;
+  --card-bg: #fff;
+  --card-shadow: rgba(0,0,0,0.1);
+  --button-bg: #22c55e;
+  --button-hover: #16a34a;
+  --active-badge-bg: #16a34a;
+  --active-badge-text: #fff;
+}
+
+/* ================= DARK THEME VARIABLES ================= */
+body.dark-theme {
+  --bg-color: #1e1e1e;
+  --text-color: #eee;
+  --text-secondary: #aaa;
+  --card-bg: #2a2a2a;
+  --card-shadow: rgba(0,0,0,0.5);
+  --button-bg: #22c55e;
+  --button-hover: #16a34a;
+  --active-badge-bg: #16a34a;
+  --active-badge-text: #fff;
+}
+
+/* ================= GLOBAL ================= */
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.course-layout {
+  display: flex;
+  gap: 2rem;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.course-main {
+  flex: 3;
+}
+
+.course-sidebar {
+  flex: 1;
+}
+
+/* ================= INSTRUCTOR ================= */
+.instructor-section {
+  margin-top: 2rem;
+}
+
+.instructor-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 6px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-shadow);
+  transition: background 0.3s, border-color 0.3s;
+}
+
+.instructor-img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--card-shadow);
+}
+
+.instructor-info strong {
+  font-size: 1.2rem;
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+.instructor-info p {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
+
+.instructor-socials a {
+  margin-right: 0.5rem;
+  color: #3399cc;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.instructor-socials a:hover {
+  text-decoration: underline;
+}
+
+/* ================= LESSONS ================= */
+.lesson-section h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.lesson-row {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--card-shadow);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.lesson-row:hover {
+  background: var(--card-bg);
+}
+
+.lesson-row.locked {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.lesson-thumb {
+  width: 120px;
+  height: 80px;
+  object-fit: cover;
+  margin-right: 1rem;
+  border-radius: 4px;
+  border: 1px solid var(--card-shadow);
+}
+
+/* ================= REVIEWS ================= */
+.review-card {
+  border: 1px solid var(--card-shadow);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 6px;
+  background: var(--card-bg);
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.review-stars {
+  color: #f5c518; /* gold */
+}
+
+.review-form textarea {
+  width: 100%;
+  min-height: 80px;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid var(--card-shadow);
+  resize: vertical;
+  background: var(--card-bg);
+  color: var(--text-color);
+}
+
+/* ================= BUTTONS ================= */
+.buy-btn, .wishlist-btn, .enroll-btn {
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.buy-btn {
+  background: var(--button-bg);
+  color: #fff;
+}
+
+.buy-btn:hover:not(:disabled) {
+  background: var(--button-hover);
+}
+
+.wishlist-btn.active {
+  background: var(--button-bg);
+  color: #fff;
+}
+
+.course-benefits li {
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+}
+
+/* ================= SIDEBAR ================= */
+.sticky-card {
+  position: sticky;
+  top: 2rem;
+  border-radius: 6px;
+  background: var(--card-bg);
+  padding: 1rem;
+  border: 1px solid var(--card-shadow);
+  transition: background 0.3s, border-color 0.3s;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 1024px) {
+  .course-layout {
+    flex-direction: column;
+  }
+
+  .course-sidebar {
+    position: relative;
+    top: 0;
+  }
+
+  .lesson-thumb {
+    width: 100px;
+    height: 70px;
+  }
+}
+.subscription-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.subscription-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+}
+.coupon-box {
+  margin: 12px 0;
+}
+
+.coupon-box input {
+  width: 100%;
+  padding: 8px;
+}
+
+.coupon-box button {
+  margin-top: 6px;
+  width: 100%;
+  background: #22c55e;
+  color: #fff;
+  padding: 8px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.coupon-error {
+  color: red;
+  font-size: 13px;
+}
+
+.coupon-success {
+  color: green;
+  font-size: 13px;
+}
+
+.old-price {
+  margin-left: 8px;
+  text-decoration: line-through;
+  color: #888;
+}
