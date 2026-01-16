@@ -1,12 +1,18 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../styles/courseDetails.css";
+import axios from "axios";
 import { API } from "../api/config";
 
 const CourseDetails = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
+  const [resources, setResources] = useState([]);
   const token = localStorage.getItem("access");
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const [resumeLessonId, setResumeLessonId] = useState(null);
+  const [resumeTime, setResumeTime] = useState(0);
+  const [showResumeBtn, setShowResumeBtn] = useState(false);
 
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
@@ -14,6 +20,7 @@ const CourseDetails = () => {
   const [finalPrice, setFinalPrice] = useState(0);
 
   const [course, setCourse] = useState(null);
+  const [currentLesson, setCurrentLesson] = useState(null);
   const [currentVideo, setCurrentVideo] = useState(null);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -23,11 +30,19 @@ const CourseDetails = () => {
   const [comment, setComment] = useState("");
   const [avgRating, setAvgRating] = useState(0);
 
+  const videoRef = useRef();
+
   /* ================= LOAD COURSE ================= */
   const loadCourse = useCallback(async () => {
     try {
       const res = await fetch(API.COURSE_BY_ID(courseId));
-      const data = await res.json();
+      const text = await res.text();
+
+      if (!res.ok || text.startsWith("<")) {
+        throw new Error("Invalid JSON response");
+      }
+
+      const data = JSON.parse(text);
       setCourse(data);
 
       if (data.trial_video) setCurrentVideo(data.trial_video);
@@ -47,8 +62,13 @@ const CourseDetails = () => {
       const res = await fetch(API.ENROLL_CHECK(courseId), {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await res.json();
+
+      const text = await res.text();
+      if (!res.ok || text.startsWith("<")) return;
+
+      const data = JSON.parse(text);
       setIsEnrolled(data.enrolled);
+
     } catch (err) {
       console.error("Enroll check failed", err);
     }
@@ -131,37 +151,82 @@ const CourseDetails = () => {
 
   /* ================= WISHLIST ================= */
   const loadWishlist = useCallback(async () => {
-    if (!token) return;
     try {
-      const res = await fetch(API.WISHLIST_CHECK(courseId), {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      setInWishlist(data.in_wishlist);
+      if (token) {
+        // Logged-in user: check from backend
+        const res = await fetch(API.WISHLIST_CHECK(courseId), {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        setInWishlist(data.in_wishlist);
+      } else {
+        // Guest user: check from localStorage
+        const guestWishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
+        setInWishlist(guestWishlist.includes(courseId));
+      }
     } catch (err) {
       console.error(err);
     }
   }, [courseId, token]);
 
+  useEffect(() => {
+    loadWishlist();
+  }, [loadWishlist]);
+
+  // ✅ Add/Remove wishlist
   const toggleWishlist = async () => {
-    if (!token) return navigate("/login");
-    await fetch(API.WISHLIST_TOGGLE, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ course: courseId }),
-    });
-    setInWishlist(!inWishlist);
+    try {
+      if (!token) {
+        // Guest user
+        let guestWishlist =
+          JSON.parse(localStorage.getItem("wishlist")) || [];
+
+        if (guestWishlist.includes(courseId)) {
+          guestWishlist = guestWishlist.filter((id) => id !== courseId);
+          setInWishlist(false);
+        } else {
+          guestWishlist.push(courseId);
+          setInWishlist(true);
+        }
+
+        localStorage.setItem("wishlist", JSON.stringify(guestWishlist));
+        return;
+      }
+
+      // 🔥 LOGGED-IN USER
+      const res = await fetch(API.WISHLIST_TOGGLE(courseId), {
+        method: "POST", // ✅ THIS FIXES 405
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const text = await res.text();
+      if (!res.ok || text.startsWith("<")) {
+        console.error("Wishlist toggle failed");
+        return;
+      }
+
+      const data = JSON.parse(text);
+      setInWishlist(data.in_wishlist);
+
+    } catch (err) {
+      console.error("Wishlist toggle error:", err);
+    }
   };
 
   /* ================= REVIEWS ================= */
   const loadReviews = useCallback(async () => {
     try {
       const res = await fetch(API.COURSE_REVIEWS(courseId));
-      const data = await res.json();
+      const text = await res.text();
+
+      if (!res.ok || text.startsWith("<")) return;
+
+      const data = JSON.parse(text);
       setReviews(data || []);
+
       if (data?.length) {
         const total = data.reduce((s, r) => s + r.rating, 0);
         setAvgRating((total / data.length).toFixed(1));
@@ -201,7 +266,13 @@ const CourseDetails = () => {
         body: JSON.stringify({ code: couponCode }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      if (!res.ok || text.startsWith("<")) {
+        setCouponError("Invalid server response");
+        return;
+      }
+
+      const data = JSON.parse(text);
 
       if (!data.valid) {
         setCouponError(data.message || "Invalid coupon");
@@ -232,18 +303,107 @@ const CourseDetails = () => {
     if (course?.price) setFinalPrice(course.price);
   }, [course]);
 
+  useEffect(() => {
+    if (!token || !courseId) return;
+
+    fetch(`http://127.0.0.1:8000/api/course/last-watched/${courseId}/`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.lesson_id) {
+          setResumeLessonId(data.lesson_id);
+          setResumeTime(data.last_watched_time || 0);
+        }
+      });
+  }, [courseId]);
+
+  useEffect(() => {
+    if (!course || !resumeLessonId) return;
+
+    const lesson = course.lessons.find(l => l.id === resumeLessonId);
+    if (!lesson) return;
+
+    setCurrentLesson(lesson);
+    setCurrentVideo(lesson.video_url);
+
+    if (resumeTime > 5 && isMobile) {
+      setShowResumeBtn(true); // mobile needs tap
+    }
+  }, [course, resumeLessonId]);
+
   /* ================= PLAY LESSON ================= */
+  useEffect(() => {
+    if (!currentLesson?.id || !token) return;
+
+    fetch(`http://127.0.0.1:8000/api/lesson-progress/${currentLesson.id}/`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        const time = data.last_watched_time || 0;
+        setResumeTime(time);
+
+        if (time > 5) {
+          setShowResumeBtn(true); // 👈 show button on mobile
+        }
+      });
+  }, [currentLesson?.id]);
+
   const playLesson = (lesson) => {
     if (!isEnrolled) {
-      alert("🔒 Please enroll to watch this video");
+      alert("Please enroll");
       return;
     }
-    if (!lesson.video_url) {
-      alert("❌ Video not available");
+
+    if (!lesson?.id || !lesson?.video_url) {
+      console.error("Invalid lesson object", lesson);
       return;
     }
+
+    setCurrentLesson(lesson);
     setCurrentVideo(lesson.video_url);
   };
+
+  // Save progress every 5 seconds
+  useEffect(() => {
+    const saveProgress = () => {
+      if (!videoRef.current) return;
+
+      fetch(API.LESSON_SAVE_PROGRESS, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          lesson_id: currentLesson.id,
+          last_watched_time: Math.floor(videoRef.current.currentTime),
+        }),
+      });
+    };
+
+    window.addEventListener("beforeunload", saveProgress);
+    videoRef.current?.addEventListener("pause", saveProgress);
+
+    return () => {
+      window.removeEventListener("beforeunload", saveProgress);
+      videoRef.current?.removeEventListener("pause", saveProgress);
+    };
+  }, [currentLesson?.id]);
+
+  useEffect(() => {
+    if (!videoRef.current || !resumeTime) return;
+
+    if (!isMobile) {
+      videoRef.current.currentTime = resumeTime;
+      videoRef.current.play().catch(() => { });
+    }
+  }, [resumeTime]);
 
   const goToSubscription = () => {
     if (!token) navigate("/login");
@@ -262,6 +422,28 @@ const CourseDetails = () => {
       loadWishlist();
     }
   }, [course, checkEnrollment, loadWishlist]);
+
+const getFileIcon = (url) => {
+  if (!url) return "📁";
+
+  const ext = url.split(".").pop().toLowerCase();
+
+  if (ext === "pdf") return "📄";
+  if (ext === "ppt" || ext === "pptx") return "📊";
+  if (ext === "doc" || ext === "docx") return "📝";
+  if (ext === "zip") return "🗜️";
+
+  return "📁";
+};
+
+ useEffect(() => {
+  fetch(API.COURSE_LESSONS_RESOURCES(courseId))
+    .then((res) => res.json())
+    .then((data) => setResources(data))
+    .catch((err) => console.error(err));
+}, [courseId]);
+
+
 
   if (loading) return <p>Loading...</p>;
   if (!course) return <p>Course not found</p>;
@@ -306,6 +488,7 @@ const CourseDetails = () => {
         {/* Lessons */}
         <section className="lesson-section">
           <h2>Lessons</h2>
+
           {course.lessons?.map((lesson) => (
             <div
               key={lesson.id}
@@ -317,10 +500,12 @@ const CourseDetails = () => {
                 alt={lesson.title}
                 className="lesson-thumb"
               />
+
               <div className="lesson-content">
                 <strong>{lesson.title}</strong>
                 {lesson.short_description && <p>{lesson.short_description}</p>}
               </div>
+
               {!isEnrolled && <span className="lock-icon">🔒</span>}
             </div>
           ))}
@@ -362,15 +547,77 @@ const CourseDetails = () => {
             </div>
           )}
         </section>
+        <div className="free-resources">
+  <h2>Downloadable Free Resources</h2>
+
+  {resources.length === 0 && <p>No free resources available.</p>}
+
+  <ul>
+    {resources.map((res) => (
+      <li key={res.id} className="resource-item">
+        <a
+          href={res.file_url}   // ✅ CORRECT FIELD
+          download              // ✅ FORCE DOWNLOAD
+          target="_blank"
+          rel="noopener noreferrer"
+          className="resource-link"
+        >
+          <span className="resource-icon">
+            {getFileIcon(res.file_url)}
+          </span>
+
+          <span className="resource-title">
+            {res.title}
+          </span>
+        </a>
+
+        {res.description && (
+          <p className="resource-desc">{res.description}</p>
+        )}
+
+        <div className="resource-meta">
+          {res.file_size_kb && (
+            <span>{res.file_size_kb} KB</span>
+          )}
+          {res.download_count !== undefined && (
+            <span>⬇ {res.download_count}</span>
+          )}
+        </div>
+      </li>
+    ))}
+  </ul>
+</div>
+
       </div>
+
 
       {/* Sidebar */}
       <div className="course-sidebar">
         <div className="sticky-card">
           {currentVideo && (
-            <video key={currentVideo} width="100%" controls>
+            <video
+              ref={videoRef}
+              key={currentVideo}
+              width="100%"
+              controls
+              playsInline        // ✅ iOS FIX
+              preload="metadata" // ✅ faster load
+              muted={isMobile}   // ✅ mobile autoplay rule
+            >
               <source src={currentVideo} type="video/mp4" />
             </video>
+          )}
+          {showResumeBtn && (
+            <button
+              className="resume-btn"
+              onClick={() => {
+                videoRef.current.currentTime = resumeTime;
+                videoRef.current.play();
+                setShowResumeBtn(false);
+              }}
+            >
+              ▶ Resume from {Math.floor(resumeTime)}s
+            </button>
           )}
 
           <button
@@ -422,6 +669,7 @@ const CourseDetails = () => {
           </ul>
         </div>
       </div>
+
     </div>
   );
 };

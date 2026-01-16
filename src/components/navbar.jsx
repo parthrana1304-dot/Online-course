@@ -10,6 +10,7 @@ const Navbar = () => {
   /* ================= AUTH ================= */
   const [userEmail, setUserEmail] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
 
   /* ================= CATEGORY ================= */
   const [categories, setCategories] = useState([]);
@@ -124,6 +125,14 @@ const Navbar = () => {
     setDropdownOpen(false);
     navigate("/login");
   };
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark") {
+      document.body.classList.add("dark");
+      setDarkMode(true);
+    }
+  }, []);
+
 
   return (
     <nav className="navbar">
@@ -158,18 +167,7 @@ const Navbar = () => {
         </div>
 
         {/* THEME SELECT */}
-        <div className="theme-select-wrapper">
-          <select
-            value={theme}
-            onChange={(e) => setTheme(e.target.value)}
-            className="theme-select"
-          >
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-            <option value="system">System</option>
-          </select>
-        </div>
-
+      
         {/* NAV MENU */}
         <ul className="nav-menu">
 

@@ -17,11 +17,19 @@ export const API = {
   LOGIN : `${API_BASE}/api/login/`,
   SIGNUP: `${API_BASE}/api/signup/`,
   GOOGLE_LOGIN: `${API_BASE}/api/auth/google/`, // Google OAuth endpoint
+  SEND_OTP : `${API_BASE}/api/send-otp/`,
+  VERIFY_OTP : `${API_BASE}/api/verify-otp/`,
+  SEND_RECOVERY_EMAIL: `${API_BASE}/api/send-recovery-email/`,
 
+  // function because uid & token are dynamic
+  RESET_PASSWORD: (uid, token) =>
+    `${API_BASE}/api/reset-password/${uid}/${token}/`,
+  
+  PROGRESS: `${API_BASE}/api/progress/`,
 
   //WISHLIST
   WISHLIST_LIST: `${API_BASE}/api/wishlistview/`,
-  WISHLIST_TOGGLE: `${API_BASE}/api/toggle/`,
+  WISHLIST_TOGGLE:(id) => `${API_BASE}/api/toggle/${id}/`,
   WISHLIST_CHECK: (id) => `${API_BASE}/api/check/${id}/`,
 
   //REVIEWS
@@ -39,4 +47,12 @@ export const API = {
   
   VERIFY_PAYMENT : `${API_BASE}/api/enrollment/verify_payment/`,
   CREATE_ORDER : `${API_BASE}/api/enrollment/create-order/`,
+
+  LESSON_SAVE_PROGRESS: `${API_BASE}/api/lesson-progress/save/`,
+  LESSON_PROGRESS: (lessonId) => `${API_BASE}/api/lesson-progress/${lessonId}/`,
+  LAST_WATCHED_LESSON: (courseId) => `${API_BASE}/api/course/last-watched/${courseId}/`,
+  
+  COURSE_LESSONS_RESOURCES: (id) => `${API_BASE}/api/course/${id}/resources/`,
+  RESOURCE_DOWNLOAD: (id) => `${API_BASE}/api/resource/${id}/download/`,
+
 };  

@@ -14,12 +14,11 @@ import AboutPage from "./pages/AboutPage";
 import Contact from "./pages/contact";
 import AdBanner from "./components/adBanner";
 import GoogleLoginButton from "./components/googleloginbtn";
-import { ThemeProvider } from "./context/ThemeContext";
+import Progress from "./pages/Progress";
 
-const App = () => {
+function App() {
   return (
-    <ThemeProvider>
-     <Routes>
+    <Routes>
 
         {/* Pages WITH Navbar & Footer */}
         <Route element={<MainLayout />}>
@@ -32,6 +31,7 @@ const App = () => {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/add" element={<AdBanner />} />
+          <Route path="/progress" element={<Progress />} />
         </Route>
 
         {/* Pages WITHOUT Navbar & Footer */}
@@ -39,8 +39,7 @@ const App = () => {
         <Route path="/signup" element={<Signup />} />
         <Route path="/google-login" element={<GoogleLoginButton />} />
       </Routes>
-    </ThemeProvider>
   );
-};
+}
 
 export default App;
