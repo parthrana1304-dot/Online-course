@@ -15,26 +15,20 @@ const HomePage = () => {
 
   const [categories, setCategories] = useState([]);
   const [courses, setCourses] = useState([]);
+  const [wishlistIds, setWishlistIds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [slide, setSlide] = useState(0);
   const [error, setError] = useState(null);
   const [userEmail, setUserEmail] = useState(null);
 
-  /* ================= GET USER EMAIL ================= */
+  const token = localStorage.getItem("access");
+
+  /* ================= USER EMAIL ================= */
   useEffect(() => {
     const email = localStorage.getItem("user_email");
     if (email && email !== "undefined" && email !== "null") {
       setUserEmail(email);
     }
-  }, []);
-
-  useEffect(() => {
-    const handleStorage = () => {
-      const email = localStorage.getItem("user_email");
-      setUserEmail(email && email !== "undefined" ? email : null);
-    };
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
   /* ================= CAROUSEL ================= */
@@ -48,8 +42,6 @@ const HomePage = () => {
 
   /* ================= SAFE FETCH ================= */
   const safeFetch = async (url) => {
-    const token = localStorage.getItem("access");
-
     const res = await fetch(url, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
@@ -72,14 +64,21 @@ const HomePage = () => {
 
         let allCourses = [];
         let url = API.COURSES;
-
         while (url) {
           const data = await safeFetch(url);
           allCourses = [...allCourses, ...(data.results || [])];
           url = data.next;
         }
-
         setCourses(allCourses);
+
+        // Load wishlist
+        if (token) {
+          const wl = await safeFetch(API.WISHLIST_LIST);
+          const ids = Array.isArray(wl)
+            ? wl.map((i) => i.course.id)
+            : wl.results?.map((i) => i.course.id) || [];
+          setWishlistIds(ids);
+        }
       } catch (err) {
         setError("Failed to load data");
       } finally {
@@ -88,7 +87,37 @@ const HomePage = () => {
     };
 
     loadData();
-  }, []);
+  }, [token]);
+
+  /* ================= TOGGLE WISHLIST ================= */
+  const toggleWishlist = async (e, courseId) => {
+    e.stopPropagation();
+
+    if (!token) {
+      alert("Please login to add to wishlist");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      await fetch(API.WISHLIST_TOGGLE(courseId), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ course: courseId }),
+      });
+
+      setWishlistIds((prev) =>
+        prev.includes(courseId)
+          ? prev.filter((id) => id !== courseId)
+          : [...prev, courseId]
+      );
+    } catch (err) {
+      alert("Failed to update wishlist");
+    }
+  };
 
   if (loading) {
     return <p style={{ textAlign: "center", marginTop: 50 }}>Loading...</p>;
@@ -96,26 +125,16 @@ const HomePage = () => {
 
   return (
     <div className="homepage">
-
-      {/* ================= WELCOME MESSAGE ================= */}
       {userEmail && (
         <div className="welcome-msg">
           <h3>Welcome, {userEmail} 👋</h3>
         </div>
       )}
 
-      {/* ================= CAROUSEL ================= */}
+      {/* CAROUSEL */}
       <div className="carousel-container">
-        <button className="carousel-btn left" onClick={() => setSlide(slide === 0 ? carouselImages.length - 1 : slide - 1)}>
-          ❮
-        </button>
         <img src={carouselImages[slide]} alt="banner" className="carousel-img" />
-        <button className="carousel-btn right" onClick={() => setSlide((slide + 1) % carouselImages.length)}>
-          ❯
-        </button>
       </div>
-
-      {error && <p style={{ color: "red", textAlign: "center" }}>{error}</p>}
 
       <section className="categories">
         <h2>Top Categories</h2>
@@ -132,27 +151,44 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* COURSES */}
       <section className="popular-courses">
         <h2>All Courses</h2>
         <div className="courses-grid">
-          {courses.map((course) => (
-            <div
-              key={course.id}
-              className="course-card"
-              onClick={() => navigate(`/course/${course.id}`)}
-            >
-              <img
-                src={course.thumbnail || "https://via.placeholder.com/150"}
-                alt={course.title}
-                className="course-thumb"
-              />
-              <div className="course-info">
-                <h3>{course.title}</h3>
-                <p>{course.short_description}</p>
-                <p className="price">₹{course.price || 0}</p>
+          {courses.map((course) => {
+            const isWishlisted = wishlistIds.includes(course.id);
+
+            return (
+              <div
+                key={course.id}
+                className="course-card"
+                onClick={() => navigate(`/course/${course.id}`)}
+              >
+                <div className="thumb-wrapper">
+                  <img
+                    src={course.thumbnail || "https://via.placeholder.com/150"}
+                    alt={course.title}
+                    className="course-thumb"
+                  />
+
+                  {/* ❤️ Wishlist Button */}
+                  <button
+                    className={`wishlist-btn ${isWishlisted ? "active" : ""}`}
+                    onClick={(e) => toggleWishlist(e, course.id)}
+                    title="Add to wishlist"
+                  >
+                    ❤️
+                  </button>
+                </div>
+
+                <div className="course-info">
+                  <h3>{course.title}</h3>
+                  <p>{course.short_description}</p>
+                  <p className="price">₹{course.price || 0}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 

@@ -393,3 +393,32 @@ body.instructor-theme .tag.trending {
   background: linear-gradient(135deg, #facc15, #eab308);
   color: #020617;
 }
+.thumb-wrapper {
+  position: relative;
+}
+
+/* Wishlist Heart */
+.wishlist-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+}
+
+.wishlist-btn:hover {
+  transform: scale(1.15);
+}
+
+.wishlist-btn.active {
+  color: #e11d48; /* red */
+}

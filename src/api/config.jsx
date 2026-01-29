@@ -29,8 +29,8 @@ export const API = {
 
   //WISHLIST
   WISHLIST_LIST: `${API_BASE}/api/wishlistview/`,
-  WISHLIST_TOGGLE:(id) => `${API_BASE}/api/toggle/${id}/`,
-  WISHLIST_CHECK: (id) => `${API_BASE}/api/check/${id}/`,
+  WISHLIST_TOGGLE:(courseId) => `${API_BASE}/api/toggle/${courseId}/`,
+  WISHLIST_CHECK: (courseId) => `${API_BASE}/api/check/${courseId}/`,
 
   //REVIEWS
   COURSE_REVIEWS: (id) => `${API_BASE}/api/courses/${id}/reviews/`,
@@ -49,10 +49,19 @@ export const API = {
   CREATE_ORDER : `${API_BASE}/api/enrollment/create-order/`,
 
   LESSON_SAVE_PROGRESS: `${API_BASE}/api/lesson-progress/save/`,
-  LESSON_PROGRESS: (lessonId) => `${API_BASE}/api/lesson-progress/${lessonId}/`,
+  LESSON_PROGRESS: (courseId) => `${API_BASE}/api/lesson-progress/${courseId}/`,
   LAST_WATCHED_LESSON: (courseId) => `${API_BASE}/api/course/last-watched/${courseId}/`,
   
   COURSE_LESSONS_RESOURCES: (id) => `${API_BASE}/api/course/${id}/resources/`,
   RESOURCE_DOWNLOAD: (id) => `${API_BASE}/api/resource/${id}/download/`,
+
+  START_EXAM: (courseId) => `${API_BASE}/api/exams/access/${courseId}/`,
+  SUBMIT_EXAM: `${API_BASE}/api/exams/submit/`,
+
+  COURSE_PROGRESS_STATUS: (courseId) => `${API_BASE}/api/course-progress/${courseId}/`,
+  LESSON_COMPLETED : `${API_BASE}/api/lesson-complete/`,
+  
+  GENERATE_CERTIFICATE: (courseId) => `${API_BASE}/api/generate-certificate/${courseId}/`
+  
 
 };  

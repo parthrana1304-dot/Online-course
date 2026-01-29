@@ -6,6 +6,7 @@ const API = axios.create({
     "Content-Type": "application/json",
   },
 });
+const token = localStorage.getItem("access"); // JWT token
 
 // Add JWT token to requests
 API.interceptors.request.use((config) => {
@@ -42,6 +43,23 @@ API.interceptors.response.use(
         return Promise.reject(err);
       }
     }
+const getCourseProgress = async (courseId, lessonId) => {
+  try {
+    const res = await axios.get(
+      `http://localhost:8000/api/course-progress/${courseId}/${lessonId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // this is crucial
+        },
+      }
+    );
+    console.log(res.data);
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching course progress:", err.response);
+  }
+};
+
     return Promise.reject(error);
   }
 );

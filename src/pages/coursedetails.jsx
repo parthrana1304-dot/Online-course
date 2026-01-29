@@ -3,11 +3,16 @@ import { useParams, useNavigate } from "react-router-dom";
 import "../styles/courseDetails.css";
 import axios from "axios";
 import { API } from "../api/config";
+import LoginPrompt from "../components/loginprompt";
 
 const CourseDetails = () => {
   const { courseId } = useParams();
+const getResumeKey = (courseId, lessonId) =>
+  `resume_course_${courseId}_lesson_${lessonId}`;
+
   const navigate = useNavigate();
   const [resources, setResources] = useState([]);
+  const [progress, setProgress] = useState({ is_completed: false });
   const token = localStorage.getItem("access");
   const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   const [resumeLessonId, setResumeLessonId] = useState(null);
@@ -19,6 +24,8 @@ const CourseDetails = () => {
   const [couponError, setCouponError] = useState("");
   const [finalPrice, setFinalPrice] = useState(0);
 
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  
   const [course, setCourse] = useState(null);
   const [currentLesson, setCurrentLesson] = useState(null);
   const [currentVideo, setCurrentVideo] = useState(null);
@@ -88,9 +95,15 @@ const CourseDetails = () => {
 
   /* ================= ENROLL ================= */
   const handleEnroll = async () => {
+    const isLoggedIn = !!localStorage.getItem("access");
+
     if (!token) return navigate("/login");
 
     try {
+       if (!isLoggedIn) {
+      setShowLoginPrompt(true);
+      return;
+    }
       const loaded = await loadRazorpayScript();
       if (!loaded) return alert("Razorpay SDK failed to load. Check your internet.");
 
@@ -257,24 +270,23 @@ const CourseDetails = () => {
 
   /* ================= COUPON ================= */
   const applyCoupon = async () => {
-    if (!couponCode) return;
+    if (!couponCode) {
+      setCouponError("Please enter a coupon code");
+      return;
+    }
 
     try {
       const res = await fetch(API.APPLY_VALID_COUPON, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ code: couponCode }),
       });
 
-      const text = await res.text();
-      if (!res.ok || text.startsWith("<")) {
-        setCouponError("Invalid server response");
-        return;
-      }
+      const data = await res.json();
 
-      const data = JSON.parse(text);
-
-      if (!data.valid) {
+      if (!res.ok || !data.valid) {
         setCouponError(data.message || "Invalid coupon");
         setAppliedCoupon(null);
         setFinalPrice(course.price);
@@ -295,7 +307,7 @@ const CourseDetails = () => {
       setCouponError("");
     } catch (err) {
       console.error(err);
-      setCouponError("Failed to apply coupon");
+      setCouponError("Server error while applying coupon");
     }
   };
 
@@ -306,7 +318,7 @@ const CourseDetails = () => {
   useEffect(() => {
     if (!token || !courseId) return;
 
-    fetch(`http://127.0.0.1:8000/api/course/last-watched/${courseId}/`, {
+    fetch(API.LAST_WATCHED_LESSON(courseId), {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -338,7 +350,7 @@ const CourseDetails = () => {
   useEffect(() => {
     if (!currentLesson?.id || !token) return;
 
-    fetch(`http://127.0.0.1:8000/api/lesson-progress/${currentLesson.id}/`, {
+    fetch(API.LESSON_PROGRESS(courseId), {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -409,6 +421,32 @@ const CourseDetails = () => {
     if (!token) navigate("/login");
     else navigate("/subscription");
   };
+const handleTimeUpdate = () => {
+  if (!videoRef.current || !currentLesson?.id) return;
+
+  const currentTime = videoRef.current.currentTime;
+
+  localStorage.setItem(
+    getResumeKey(courseId, currentLesson.id),
+    currentTime
+  );
+};
+useEffect(() => {
+  if (!currentLesson?.id) return;
+
+  const savedTime = Number(
+    localStorage.getItem(`resume_${currentLesson.id}`)
+  );
+
+  // ✅ Show resume only if meaningful
+  if (savedTime && savedTime > 10) {
+    setResumeTime(savedTime);
+    setShowResumeBtn(true);
+  } else {
+    setResumeTime(0);
+    setShowResumeBtn(false);
+  }
+}, [currentLesson]);
 
   /* ================= EFFECTS ================= */
   useEffect(() => {
@@ -423,27 +461,115 @@ const CourseDetails = () => {
     }
   }, [course, checkEnrollment, loadWishlist]);
 
-const getFileIcon = (url) => {
-  if (!url) return "📁";
+  const getFileIcon = (url) => {
+    if (!url) return "📁";
 
-  const ext = url.split(".").pop().toLowerCase();
+    const ext = url.split(".").pop().toLowerCase();
 
-  if (ext === "pdf") return "📄";
-  if (ext === "ppt" || ext === "pptx") return "📊";
-  if (ext === "doc" || ext === "docx") return "📝";
-  if (ext === "zip") return "🗜️";
+    if (ext === "pdf") return "📄";
+    if (ext === "ppt" || ext === "pptx") return "📊";
+    if (ext === "doc" || ext === "docx") return "📝";
+    if (ext === "zip") return "🗜️";
 
-  return "📁";
+    return "📁";
+  };
+
+  useEffect(() => {
+    fetch(API.COURSE_LESSONS_RESOURCES(courseId))
+      .then((res) => res.json())
+      .then((data) => setResources(data))
+      .catch((err) => console.error(err));
+  }, [courseId]);
+
+  const fetchProgress = useCallback(async () => {
+    const token = localStorage.getItem("access");
+
+    try {
+      const res = await fetch(API.COURSE_PROGRESS_STATUS(courseId), {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+
+      setProgress({
+        completed_lessons: Number(data.completed_lessons) || 0,
+        total_lessons: Number(data.total_lessons) || 0,
+        is_completed: data.is_completed || false,
+      });
+    } catch (err) {
+      console.error("Progress fetch error:", err);
+    }
+  }, [courseId]);
+
+  // ✅ CALL IT HERE
+  useEffect(() => {
+    fetchProgress();
+  }, [fetchProgress]);
+
+
+  // ✅ USE IT HERE
+const markLessonCompleted = async (lessonId) => {
+  if (!lessonId) return;
+
+  try {
+    await axios.post(
+      API.LESSON_COMPLETED,
+      { lesson_id: lessonId },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    // ✅ Always re-fetch from backend
+    fetchProgress();
+
+  } catch (err) {
+    console.error("Lesson completion error:", err);
+  }
 };
 
- useEffect(() => {
-  fetch(API.COURSE_LESSONS_RESOURCES(courseId))
-    .then((res) => res.json())
-    .then((data) => setResources(data))
-    .catch((err) => console.error(err));
-}, [courseId]);
 
+const handleVideoEnd = () => {
+  if (!currentLesson?.id) return;
 
+  localStorage.removeItem(`resume_${currentLesson.id}`);
+  setResumeTime(0);
+  setShowResumeBtn(false);
+
+  markLessonCompleted(currentLesson.id);
+};
+
+const handleExamClick = async () => {
+  const token = localStorage.getItem("access");
+
+  if (!token) {
+    alert("Please login first");
+    navigate("/login");
+    return;
+  }
+
+  try {
+    const res = await axios.get(API.START_EXAM(courseId), {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    console.log("Exam access success:", res.data);
+    navigate(`/examination/${courseId}`);
+  } catch (err) {
+    console.error("Exam access error:", err.response || err);
+
+    if (err.response?.status === 401) {
+      alert("Session expired or invalid token. Please login again.");
+      navigate("/login");
+    } else if (err.response?.status === 403) {
+      alert("❌ Complete all lessons to unlock the exam");
+    } else {
+      alert("Failed to check exam access");
+    }
+  }
+};
 
   if (loading) return <p>Loading...</p>;
   if (!course) return <p>Course not found</p>;
@@ -548,45 +674,86 @@ const getFileIcon = (url) => {
           )}
         </section>
         <div className="free-resources">
-  <h2>Downloadable Free Resources</h2>
+          <h2>Downloadable Free Resources</h2>
 
-  {resources.length === 0 && <p>No free resources available.</p>}
+          {resources.length === 0 && <p>No free resources available.</p>}
 
-  <ul>
-    {resources.map((res) => (
-      <li key={res.id} className="resource-item">
-        <a
-          href={res.file_url}   // ✅ CORRECT FIELD
-          download              // ✅ FORCE DOWNLOAD
-          target="_blank"
-          rel="noopener noreferrer"
-          className="resource-link"
-        >
-          <span className="resource-icon">
-            {getFileIcon(res.file_url)}
-          </span>
+          <ul>
+            {resources.map((res) => (
+              <li key={res.id} className="resource-item">
+                <a
+                  href={res.file_url}   // ✅ CORRECT FIELD
+                  download              // ✅ FORCE DOWNLOAD
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="resource-link"
+                >
+                  <span className="resource-icon">
+                    {getFileIcon(res.file_url)}
+                  </span>
 
-          <span className="resource-title">
-            {res.title}
-          </span>
-        </a>
+                  <span className="resource-title">
+                    {res.title}
+                  </span>
+                </a>
 
-        {res.description && (
-          <p className="resource-desc">{res.description}</p>
-        )}
+                {res.description && (
+                  <p className="resource-desc">{res.description}</p>
+                )}
 
-        <div className="resource-meta">
-          {res.file_size_kb && (
-            <span>{res.file_size_kb} KB</span>
-          )}
-          {res.download_count !== undefined && (
-            <span>⬇ {res.download_count}</span>
-          )}
+                <div className="resource-meta">
+                  {res.file_size_kb && (
+                    <span>{res.file_size_kb} KB</span>
+                  )}
+                  {res.download_count !== undefined && (
+                    <span>⬇ {res.download_count}</span>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
         </div>
-      </li>
-    ))}
-  </ul>
-</div>
+        {isEnrolled && (
+          <><h1>Course Details</h1><div style={{ margin: "15px 0" }}>
+            <div
+              style={{
+                width: "100%",
+                height: "12px",
+                background: "#e0e0e0",
+                borderRadius: "10px",
+                overflow: "hidden",
+                marginBottom: "10px",
+              }}
+            >
+              <div
+                style={{
+                  width:
+                    progress.total_lessons > 0
+                      ? `${(progress.completed_lessons / progress.total_lessons) * 100}%`
+                      : "0%",
+                  height: "100%",
+                  background: "#4caf50",
+                  borderRadius: "10px",
+                  transition: "width 0.4s ease",
+                }}
+              />
+            </div>
+
+            <p>
+              {progress.completed_lessons} / {progress.total_lessons} lessons completed
+            </p>
+
+          </div></>
+        )}
+{progress.is_completed ? (
+<button className="exam-btn" onClick={handleExamClick}>
+  Take Examination
+</button>
+
+) : (
+  <p>🔒 Complete all lessons to unlock the examination</p>
+)}
+
 
       </div>
 
@@ -600,24 +767,15 @@ const getFileIcon = (url) => {
               key={currentVideo}
               width="100%"
               controls
-              playsInline        // ✅ iOS FIX
-              preload="metadata" // ✅ faster load
-              muted={isMobile}   // ✅ mobile autoplay rule
+              playsInline
+              preload="metadata"
+              muted={isMobile}
+              onEnded={handleVideoEnd}
+              onTimeUpdate={handleTimeUpdate}
+
             >
               <source src={currentVideo} type="video/mp4" />
             </video>
-          )}
-          {showResumeBtn && (
-            <button
-              className="resume-btn"
-              onClick={() => {
-                videoRef.current.currentTime = resumeTime;
-                videoRef.current.play();
-                setShowResumeBtn(false);
-              }}
-            >
-              ▶ Resume from {Math.floor(resumeTime)}s
-            </button>
           )}
 
           <button

@@ -1,56 +1,208 @@
+/* --------------------------
+  Wishlist Page Container
+-------------------------- */
 .wishlist-page {
-  padding: 30px;
+  padding: 50px 25px;
+  background: #f0f2f5;
+  min-height: 100vh;
+  font-family: 'Poppins', sans-serif;
 }
 
+/* Page Heading */
+.wishlist-page h1 {
+  text-align: center;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 35px;
+}
+
+/* --------------------------
+  Wishlist Grid
+-------------------------- */
 .wishlist-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 30px;
 }
 
+/* --------------------------
+  Wishlist Card
+-------------------------- */
 .wishlist-card {
-  background: #fff;
-  border-radius: 8px;
-  padding: 15px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  background: linear-gradient(145deg, #ffffff, #e6ebf2);
+  border-radius: 15px;
+  padding: 20px;
   text-align: center;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
+.wishlist-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Course Image */
 .wishlist-card img {
   width: 100%;
-  height: 160px;
+  height: 170px;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: 12px;
+  margin-bottom: 14px;
+  transition: transform 0.3s ease;
 }
 
+.wishlist-card img:hover {
+  transform: scale(1.08);
+}
+
+/* Course Title */
 .wishlist-card h3 {
-  margin: 10px 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 10px 0 6px;
 }
 
+/* Course Short Description */
 .wishlist-card p {
-  font-size: 14px;
-  color: #555;
+  font-size: 0.9rem;
+  color: #4b5563;
+  line-height: 1.5;
+  max-height: 45px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
+/* --------------------------
+  Action Buttons
+-------------------------- */
 .wishlist-actions {
   display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
+  justify-content: space-around;
+  margin-top: 16px;
 }
 
+/* View Button */
+/* --------------------------
+  View Button (Rounded/Pill)
+-------------------------- */
 .view-btn {
-  background: #2196f3;
+  background: #10b981; /* green */
   color: white;
-  padding: 8px 12px;
-  border-radius: 4px;
+  padding: 10px 22px; /* more horizontal padding for pill shape */
+  border-radius: 50px; /* fully rounded */
   text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.remove-btn {
-  background: #ff5252;
+.view-btn:hover {
+  background: #059669; /* darker green on hover */
+  transform: scale(1.05); /* subtle grow effect */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* soft shadow */
+}
+
+/* --------------------------
+  Remove Button (Square / Boxy)
+-------------------------- */
+/* Trash Icon Button */
+.remove-icon-btn {
+  background: #f43f5e; /* red */
   color: white;
+  font-size: 1.2rem; /* larger for icon */
   border: none;
-  padding: 8px 12px;
-  border-radius: 4px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%; /* circular button */
+  display: flex;
+  justify-content: center;
+  align-items: center;
   cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+}
+
+.remove-icon-btn:hover {
+  background: #be123c; /* darker red on hover */
+  transform: scale(1.1);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.18);
+}
+
+/* --------------------------
+  Login Prompt Modal
+-------------------------- */
+.login-prompt-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(30, 41, 59, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.login-prompt-box {
+  background: #ffffff;
+  padding: 28px 24px;
+  border-radius: 14px;
+  text-align: center;
+  max-width: 380px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.login-prompt-box p {
+  font-size: 1rem;
+  color: #1e293b;
+  margin-bottom: 22px;
+}
+
+.login-btn {
+  background: #4f46e5;
+  color: #fff;
+  border: none;
+  padding: 12px 22px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: background 0.3s ease;
+}
+
+.login-btn:hover {
+  background: #3730a3;
+}
+
+/* --------------------------
+  Responsive Adjustments
+-------------------------- */
+@media (max-width: 768px) {
+  .wishlist-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+  .wishlist-card img {
+    height: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  .wishlist-grid {
+    grid-template-columns: 1fr;
+  }
+  .wishlist-card {
+    padding: 15px;
+  }
+  .wishlist-card h3 {
+    font-size: 1rem;
+  }
+  .wishlist-card p {
+    font-size: 0.85rem;
+  }
 }
