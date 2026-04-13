@@ -56,12 +56,15 @@ export const API = {
   RESOURCE_DOWNLOAD: (id) => `${API_BASE}/api/resource/${id}/download/`,
 
   START_EXAM: (courseId) => `${API_BASE}/api/exams/access/${courseId}/`,
+  EXAM_STATUS: (courseId) => `${API_BASE}/api/exams/status/${courseId}/`,
   SUBMIT_EXAM: `${API_BASE}/api/exams/submit/`,
 
   COURSE_PROGRESS_STATUS: (courseId) => `${API_BASE}/api/course-progress/${courseId}/`,
   LESSON_COMPLETED : `${API_BASE}/api/lesson-complete/`,
   
-  GENERATE_CERTIFICATE: (courseId) => `${API_BASE}/api/generate-certificate/${courseId}/`
-  
-
+  GENERATE_CERTIFICATE: (courseId) => `${API_BASE}/api/generate-certificate/${courseId}/`,
+  DOWNLOAD_CERTIFICATE: (courseId) => `${API_BASE}/api/course/${courseId}/certificate/`,
+  USER_ME : `${API_BASE}/api/user/me/`,
+  CERTIFICATE : `${API_BASE}/api/certificates/`,
 };  
+

@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../styles/category.css";
+import WelcomeHeader from "../components/welcomeheader";
+import { useWishlist } from "../components/wishlisted";
 
 const API_BASE = "http://127.0.0.1:8000/api";
 
@@ -15,6 +17,9 @@ const CategoryPage = () => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  const { wishlistIds, toggleWishlist } = useWishlist();
+
   const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
@@ -46,44 +51,60 @@ const CategoryPage = () => {
 
   return (
     <div className="category-page">
-      <h2>Courses in this Category</h2>
+      <WelcomeHeader  />
 
+      <h1>Available Courses</h1>
       {courses.length === 0 ? (
         <p>No courses found in this category.</p>
       ) : (
         <div className="courses-grid">
-          {courses.map((course) => (
-            <div
-              key={course.id}
-              className="course-card"
-              onClick={() => navigate(`/course/${course.id}`)}
-            >
-              <img
-                src={getImageUrl(course.thumbnail)}
-                className="category-img"
-                alt={course.title}
-              />
+          {courses.map((course) => {
+            const wishlisted = wishlistIds.includes(course.id);
 
-              <div className="course-info">
-                <h3>{course.title}</h3>
+            return (
+              <div
+                key={course.id}
+                className="course-card"
+                onClick={() => navigate(`/course/${course.id}`)}
+              >
+                {/* Wishlist Button */}
+                <button
+                  className={`wishlist ${wishlisted ? "active" : ""}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleWishlist(course.id);
+                  }}
+                >
+                  {wishlisted ? "❤️" : "🤍"}
+                </button>
 
-                {/* Short description */}
-                {course.short_description && (
-                  <p className="short-description">{course.short_description}</p>
-                )}
+                <img
+                  src={getImageUrl(course.thumbnail)}
+                  className="category-img"
+                  alt={course.title}
+                />
 
-                {/* Price */}
-                <p className="course-price">
-                  Price: ₹{course.price !== undefined ? course.price : "Free"}
-                </p>
+                <div className="course-info">
+                  <h3>{course.title}</h3>
 
-                {/* Level */}
-                <p className="course-level">
-                  Level: {course.level || "N/A"}
-                </p>
+                  {/* Short description */}
+                  {course.short_description && (
+                    <p className="short-description">{course.short_description}</p>
+                  )}
+
+                  {/* Price */}
+                  <p className="course-price">
+                    Price: ₹{course.price !== undefined ? course.price : "Free"}
+                  </p>
+
+                  {/* Level */}
+                  <p className="course-level">
+                    Level: {course.level || "N/A"}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

@@ -3,12 +3,15 @@ import { useNavigate } from "react-router-dom";
 import "../styles/home.css";
 import { API } from "../api/config";
 import AdBanner from "../components/adBanner";
-
+import WelcomeHeader from "../components/welcomeheader";
+import { FaHeart, FaRegHeart } from "react-icons/fa";
+/* ================= CAROUSEL IMAGES ================= */
 const carouselImages = [
-  "https://img.freepik.com/free-vector/e-learning-banner_33099-1724.jpg",
-  "https://img.freepik.com/free-vector/online-courses-concept_23-2148532770.jpg",
-  "https://img.freepik.com/free-photo/online-courses-concept_23-2148532796.jpg",
+  "https://img-c.udemycdn.com/notices/featured_carousel_slide/image/22a3c2c4-c146-480f-932c-b868aa3d859d.png",
+  "https://img-c.udemycdn.com/notices/featured_carousel_slide/image/487fb3b7-4b6e-4c2f-a3fe-67eb51016502.jpg",
+  "https://img-c.udemycdn.com/notices/featured_carousel_slide/image/26eddc87-5b5b-4c4c-9adb-8bf99395b480.jpg",
 ];
+
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -19,17 +22,9 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
   const [slide, setSlide] = useState(0);
   const [error, setError] = useState(null);
-  const [userEmail, setUserEmail] = useState(null);
 
   const token = localStorage.getItem("access");
 
-  /* ================= USER EMAIL ================= */
-  useEffect(() => {
-    const email = localStorage.getItem("user_email");
-    if (email && email !== "undefined" && email !== "null") {
-      setUserEmail(email);
-    }
-  }, []);
 
   /* ================= CAROUSEL ================= */
   useEffect(() => {
@@ -125,11 +120,8 @@ const HomePage = () => {
 
   return (
     <div className="homepage">
-      {userEmail && (
-        <div className="welcome-msg">
-          <h3>Welcome, {userEmail} 👋</h3>
-        </div>
-      )}
+      <WelcomeHeader />
+
 
       {/* CAROUSEL */}
       <div className="carousel-container">
@@ -173,12 +165,18 @@ const HomePage = () => {
 
                   {/* ❤️ Wishlist Button */}
                   <button
-                    className={`wishlist-btn ${isWishlisted ? "active" : ""}`}
-                    onClick={(e) => toggleWishlist(e, course.id)}
+                    className={`wishlist ${isWishlisted ? "active" : ""}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleWishlist(e, course.id);
+                    }}
                     title="Add to wishlist"
                   >
-                    ❤️
+                    {isWishlisted ? <FaHeart /> : <FaRegHeart />}
+
                   </button>
+
+
                 </div>
 
                 <div className="course-info">

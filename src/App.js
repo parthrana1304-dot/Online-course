@@ -17,71 +17,102 @@ import GoogleLoginButton from "./components/googleloginbtn";
 import Examination from "./pages/Examination";
 import ExamFailed from "./pages/Examfail";
 import ExaminationSuccess from "./pages/ExaminationSuccess";
+import UserProfile from "./pages/UserProfile";
 
 // Helper: check if user is logged in
-const isLoggedIn = () => !!localStorage.getItem("access"); // JWT token or auth key
+const isLoggedIn = () => !!localStorage.getItem("access");
 
 // Protected Route Component
-const ProtectedRoute = ({ children }) => {
-  return isLoggedIn() ? children : <Navigate to="/login" />;
-};
+const ProtectedRoute = ({ children }) => (isLoggedIn() ? children : <Navigate to="/login" />);
 
 function App() {
   return (
     <Routes>
-
       {/* Pages WITH Navbar & Footer */}
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/category/:id" element={<CategoryDetails />} />
         <Route path="/course" element={<Courses />} />
-        
-        {/* Course Details - trial lessons open, full lessons protected inside component */}
         <Route path="/course/:courseId" element={<CourseDetails />} />
 
-        <Route path="/wishlist" element={
-          <ProtectedRoute>
-            <Wishlist />
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/wishlist"
+          element={
+            <ProtectedRoute>
+              <Wishlist />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/subscription" element={
-          <ProtectedRoute>
-            <Subscription />
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/subscription"
+          element={
+            <ProtectedRoute>
+              <Subscription />
+            </ProtectedRoute>
+          }
+        />
 
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/add" element={
-          <ProtectedRoute>
-            <AdBanner />
-          </ProtectedRoute>
-        } />
 
-        <Route path="/examination/:courseId" element={
-          <ProtectedRoute>
-            <Examination />
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/add"
+          element={
+            <ProtectedRoute>
+              <AdBanner />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/user/profile"
+          element={
+            <ProtectedRoute>
+              <UserProfile />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/examination/:courseId"
+          element={
+            <ProtectedRoute>
+              <Examination />
+            </ProtectedRoute>
+          }
+        />
       </Route>
 
       {/* Pages WITHOUT Navbar & Footer */}
-      <Route path="/login" element={isLoggedIn() ? <Navigate to="/" /> : <Login />} />
-      <Route path="/signup" element={isLoggedIn() ? <Navigate to="/" /> : <Signup />} />
+      <Route
+        path="/login"
+        element={isLoggedIn() ? <Navigate to="/" /> : <Login />}
+      />
+      <Route
+        path="/signup"
+        element={isLoggedIn() ? <Navigate to="/" /> : <Signup />}
+      />
       <Route path="/google-login" element={<GoogleLoginButton />} />
-      <Route path="/course/:courseId/success" element={
-        <ProtectedRoute>
-          <ExaminationSuccess />
-        </ProtectedRoute>
-      } />
-      <Route path="/course/:courseId/failed" element={
-        <ProtectedRoute>
-          <ExamFailed />
-        </ProtectedRoute>
-      } />
 
-      {/* Fallback for unknown routes */}
+      <Route
+        path="/course/:courseId/success"
+        element={
+          <ProtectedRoute>
+            <ExaminationSuccess />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/course/:courseId/failed"
+        element={
+          <ProtectedRoute>
+            <ExamFailed />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Fallback */}
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );

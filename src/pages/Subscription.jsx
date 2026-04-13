@@ -3,6 +3,7 @@ import api from "../api/axios";
 import "../styles/Subscription.css";
 import { API } from "../api/config";
 import jsPDF from "jspdf"; // ✅ Import jsPDF
+import WelcomeHeader from "../components/welcomeheader";
 
 const Subscription = () => {
   const [plans, setPlans] = useState([]);
@@ -127,14 +128,15 @@ const Subscription = () => {
 
       new window.Razorpay(options).open();
     } catch (err) {
-      if (err.response?.status === 400) {
-        alert(err.response.data.error || "You already have an active subscription");
-      } else {
-        alert("Payment failed. Please try again.");
-      }
-    }
-  };
+  console.error("PAYMENT ERROR:", err.response?.data || err.message);
+  alert(
+    err.response?.data?.error ||
+    err.response?.data?.detail ||
+    "Payment failed. Please try again."
+  );
+}
 
+    };
   /* ================= PDF RECEIPT ================= */
   const downloadReceiptPDF = () => {
     if (!receipt) return;
@@ -161,6 +163,8 @@ const Subscription = () => {
 
   return (
     <div className="subscription-page">
+      <WelcomeHeader  />
+
       <h1>Choose Your Subscription Plan</h1>
 
       {/* ================= COUPON SECTION ================= */}

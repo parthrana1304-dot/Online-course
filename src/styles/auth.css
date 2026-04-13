@@ -446,3 +446,133 @@
   border: none;
   cursor: pointer;
 }
+/* ================= ROOT ================= */
+:root {
+  --primary: #6366f1;
+  --secondary: #22d3ee;
+  --accent: #a855f7;
+  --danger: #ef4444;
+  --success: #22c55e;
+  --bg-light: #f9fafb;
+  --card-bg: rgba(255, 255, 255, 0.95);
+  --text-main: #111827;
+  --text-muted: #6b7280;
+  --border-color: #e5e7eb;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+/* ================= PAGE WRAPPER ================= */
+.auth-wrapper {
+  height: 100vh; /* full viewport height */
+  display: flex;
+  font-family: "Inter", sans-serif;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #e0f2fe, #fef3c7);
+  padding: 0; /* remove extra padding to avoid scroll */
+  overflow: hidden; /* prevent scroll */
+}
+
+/* ================= LEFT PANEL ================= */
+.auth-left {
+  flex: 1;
+  padding: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: var(--text-main);
+}
+
+.auth-left h1 {
+  font-size: 42px;
+  line-height: 1.2;
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.auth-left p {
+  margin-top: 18px;
+  font-size: 18px;
+  max-width: 420px;
+  color: var(--text-muted);
+}
+
+/* ================= RIGHT PANEL ================= */
+.auth-right {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden; /* prevent scroll inside right panel */
+}
+
+/* ================= CARD ================= */
+.auth-card {
+  width: 420px;
+  max-height: 90vh; /* prevent card from exceeding viewport */
+  overflow-y: auto; /* only card scroll if content overflows */
+  padding: 38px;
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border-radius: 18px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 20px 50px var(--shadow-color);
+  animation: slideIn 0.7s ease;
+  color: var(--text-main);
+  position: relative;
+  text-align: center;
+}
+
+/* ================= SCROLLBAR HIDE FOR WHOLE PAGE ================= */
+body.login-page,
+body.signup-page {
+  overflow: hidden; /* hide vertical scrollbar on login/signup pages */
+}
+
+/* If card content overflows */
+.auth-card::-webkit-scrollbar {
+  width: 6px;
+}
+
+.auth-card::-webkit-scrollbar-thumb {
+  background-color: rgba(99, 102, 241, 0.3);
+  border-radius: 3px;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 900px) {
+  .auth-wrapper {
+    flex-direction: column;
+  }
+
+  .auth-left {
+    padding: 40px;
+    text-align: center;
+  }
+
+  .auth-left p {
+    margin: auto;
+  }
+
+  .auth-right {
+    margin-top: 20px;
+  }
+}
+
+@media (max-width: 500px) {
+  .auth-card {
+    width: 90%;
+    padding: 28px;
+  }
+
+  .auth-card h2 {
+    font-size: 24px;
+  }
+
+  .auth-card::before {
+    width: 60px;
+    height: 60px;
+  }
+}

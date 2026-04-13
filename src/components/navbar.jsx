@@ -9,8 +9,6 @@ const Navbar = () => {
 
   /* ================= AUTH ================= */
   const [userEmail, setUserEmail] = useState(null);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
 
   /* ================= CATEGORY ================= */
   const [categories, setCategories] = useState([]);
@@ -21,60 +19,35 @@ const Navbar = () => {
   const [results, setResults] = useState([]);
   const [showSearch, setShowSearch] = useState(false);
 
-  /* ================= THEME ================= */
-  const [theme, setTheme] = useState(localStorage.getItem("app-theme") || "system");
-
-  const applyTheme = (mode) => {
-    let actualTheme = mode;
-    if (mode === "system") {
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      actualTheme = prefersDark ? "dark" : "light";
-    }
-    document.documentElement.setAttribute("data-theme", actualTheme);
-  };
-
-  useEffect(() => {
-    applyTheme(theme);
-    localStorage.setItem("app-theme", theme);
-
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleSystemChange = () => {
-      if (theme === "system") applyTheme("system");
-    };
-    mediaQuery.addEventListener("change", handleSystemChange);
-
-    return () => mediaQuery.removeEventListener("change", handleSystemChange);
-  }, [theme]);
-
   /* ================= REFS ================= */
-  const accountRef = useRef(null);
   const categoryRef = useRef(null);
   const searchRef = useRef(null);
 
   /* ================= LOAD USER ================= */
   useEffect(() => {
     const email = localStorage.getItem("user_email");
-    if (email && email !== "undefined" && email !== "null") {
-      setUserEmail(email);
-    } else {
-      setUserEmail(null);
-    }
+    setUserEmail(
+      email && email !== "undefined" && email !== "null" ? email : null
+    );
   }, []);
 
   /* ================= FETCH CATEGORIES ================= */
   useEffect(() => {
     fetch(`${API_BASE}/categories/`)
-      .then(res => res.json())
-      .then(data => setCategories(Array.isArray(data) ? data : data.results || []))
+      .then((res) => res.json())
+      .then((data) =>
+        setCategories(Array.isArray(data) ? data : data.results || [])
+      )
       .catch(console.error);
   }, []);
 
   /* ================= CLOSE DROPDOWNS ON OUTSIDE CLICK ================= */
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (accountRef.current && !accountRef.current.contains(e.target)) setDropdownOpen(false);
-      if (categoryRef.current && !categoryRef.current.contains(e.target)) setCatOpen(false);
-      if (searchRef.current && !searchRef.current.contains(e.target)) setShowSearch(false);
+      if (categoryRef.current && !categoryRef.current.contains(e.target))
+        setCatOpen(false);
+      if (searchRef.current && !searchRef.current.contains(e.target))
+        setShowSearch(false);
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -96,8 +69,8 @@ const Navbar = () => {
       const data = await res.json();
 
       const merged = [
-        ...(data.categories || []).map(i => ({ ...i, type: "category" })),
-        ...(data.courses || []).map(i => ({ ...i, type: "course" })),
+        ...(data.categories || []).map((i) => ({ ...i, type: "category" })),
+        ...(data.courses || []).map((i) => ({ ...i, type: "course" })),
       ];
 
       setResults(merged);
@@ -118,30 +91,16 @@ const Navbar = () => {
     }
   };
 
-  /* ================= LOGOUT ================= */
-  const handleLogout = () => {
-    localStorage.clear();
-    setUserEmail(null);
-    setDropdownOpen(false);
-    navigate("/login");
-  };
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme === "dark") {
-      document.body.classList.add("dark");
-      setDarkMode(true);
-    }
-  }, []);
-
 
   return (
     <nav className="navbar">
       <div className="navbar-container">
-
         {/* LOGO */}
-        <Link to="/" className="logo">EduSite</Link>
+        <Link to="/" className="logo">
+          EduSite
+        </Link>
 
-        {/* 🔍 SEARCH */}
+        {/* SEARCH */}
         <div className="nav-search" ref={searchRef}>
           <input
             type="text"
@@ -166,23 +125,19 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* THEME SELECT */}
-      
         {/* NAV MENU */}
         <ul className="nav-menu">
-
-          {/* EXPLORE MORE */}
+          {/* CATEGORIES */}
           <li className="nav-item" ref={categoryRef}>
-            <span
-              className="nav-link"
-              onClick={() => setCatOpen(!catOpen)}
-            >
-              Explore more ▾
+            <span className="nav-link" onClick={() => setCatOpen(!catOpen)}>
+              Explore ▾
             </span>
             {catOpen && (
               <div className="category-dropdown scrollable">
-                {categories.length === 0 && <div className="dropdown-item">No categories</div>}
-                {categories.map(cat => (
+                {categories.length === 0 && (
+                  <div className="dropdown-item">No categories</div>
+                )}
+                {categories.map((cat) => (
                   <div
                     key={cat.id}
                     className="dropdown-item"
@@ -198,40 +153,46 @@ const Navbar = () => {
             )}
           </li>
 
+          {/* COURSES */}
           <li className="nav-item">
-            <Link to="/course" className="nav-link">Courses</Link>
+            <Link to="/course" className="nav-link">
+              Courses
+            </Link>
           </li>
 
+          {/* WISHLIST */}
           <li className="nav-item">
-            <Link to="/wishlist" className="nav-link">Wishlist ❤️</Link>
+            <Link to="/wishlist" className="nav-link">
+              Wishlist ❤️
+            </Link>
           </li>
 
+          {/* SUBSCRIPTION */}
           <li className="nav-item">
-            <Link to="/subscription" className="nav-link">Subscription</Link>
+            <Link to="/subscription" className="nav-link">
+              Subscription
+            </Link>
           </li>
 
-          {/* AUTH */}
+          {/* LOGIN / ACCOUNT */}
           {userEmail ? (
-            <li className="nav-item account" ref={accountRef}>
+            <li className="nav-item account">
               <span
                 className="nav-link"
-                onClick={() => setDropdownOpen(!dropdownOpen)}
+                style={{ cursor: "pointer" }}
+                onClick={() => navigate("/user/profile")}
               >
                 👤 {userEmail}
               </span>
-
-              {dropdownOpen && (
-                <div className="dropdown-menu">
-                  <button onClick={handleLogout}>Logout</button>
-                </div>
-              )}
+              {/* Optional: Logout inside profile page only */}
             </li>
           ) : (
             <li className="nav-item">
-              <Link to="/login" className="nav-link">Login</Link>
+              <Link to="/login" className="nav-link">
+                Login
+              </Link>
             </li>
           )}
-
         </ul>
       </div>
     </nav>

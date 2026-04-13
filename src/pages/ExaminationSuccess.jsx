@@ -1,9 +1,9 @@
 // ExamSuccess.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { API } from "../api/config";
 import "../styles/exam.css";
+import { getCertificateBlobUrl } from "../utils/certificate";
 
 const ExamSuccess = () => {
   const { courseId } = useParams();
@@ -15,64 +15,41 @@ const ExamSuccess = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!token) {
-      navigate("/login");
-      return;
-    }
+  if (!token) {
+    navigate("/login");
+    return;
+  }
 
-    let objectUrl = null;
+  let objectUrl;
 
-    const fetchCertificate = async () => {
-      try {
-        const res = await axios.get(
-          API.GENERATE_CERTIFICATE(courseId),
-          {
-            headers: { Authorization: `Bearer ${token}` },
-            responseType: "blob", // IMPORTANT
-          }
-        );
-
-        objectUrl = URL.createObjectURL(res.data);
-        setCertificateUrl(objectUrl);
-      } catch (err) {
-        console.error("Certificate fetch error:", err);
-
-        if (err.response?.status === 403) {
-          setError("You are not allowed to view this certificate.");
-        } else {
-          setError("Failed to load certificate. Please try again.");
-        }
-      } finally {
-        setLoading(false);
+  const loadCertificate = async () => {
+    try {
+      objectUrl = await getCertificateBlobUrl(courseId, token);
+      setCertificateUrl(objectUrl);
+    } catch (err) {
+      if (err.response?.status === 403) {
+        setError("You are not eligible for this certificate.");
+      } else {
+        setError("Failed to load certificate.");
       }
-    };
-
-    fetchCertificate();
-
-    // cleanup blob URL
-    return () => {
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-    };
-  }, [courseId, token, navigate]);
-
-  const downloadCertificate = () => {
-    if (!certificateUrl) return;
-
-    const link = document.createElement("a");
-    link.href = certificateUrl;
-    link.download = `certificate_course_${courseId}.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (loading) {
-    return <p style={{ textAlign: "center" }}>Loading certificate...</p>;
-  }
+  loadCertificate();
+
+  return () => {
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
+  };
+}, [courseId]);
+
+
+  if (loading) return <p className="center">Loading certificate...</p>;
 
   if (error) {
     return (
-      <div style={{ textAlign: "center", marginTop: "50px" }}>
+      <div className="exam-result-wrapper">
         <h2>❌ {error}</h2>
         <button onClick={() => navigate("/")}>Back to Dashboard</button>
       </div>
@@ -81,33 +58,50 @@ const ExamSuccess = () => {
 
   return (
     <div className="exam-result-wrapper">
-  <h1>🎉 Congratulations!</h1>
-  <p className="success-text">You have successfully passed the exam.</p>
+      <h1>🎉 Congratulations!</h1>
+      <p className="success-text">You have successfully passed the exam.</p>
 
-  <div className="certificate-frame">
-    <iframe
-      src={certificateUrl}
-      title="Certificate Preview"
-      width="100%"
-      height="700"
-    />
-  </div>
+      <div className="certificate-frame">
+        <iframe
+          src={certificateUrl}
+          title="Certificate Preview"
+          width="100%"
+          height="700"
+        />
+      </div>
 
-  <button
-    className="result-btn primary"
-    onClick={downloadCertificate}
-    style={{ marginTop: "20px" }}
-  >
-    ⬇️ Download Certificate
-  </button>
+<button
+  onClick={async () => {
+    const token = localStorage.getItem("access");
+    if (!token) return navigate("/login");
 
-  <div style={{ marginTop: "25px" }}>
-    <button className="result-btn" onClick={() => navigate("/")}>
-      Back to Dashboard
-    </button>
-  </div>
-</div>
+    try {
+      const url = await getCertificateBlobUrl(courseId, token);
 
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `Certificate_Course_${courseId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert("Certificate not available yet.");
+    }
+  }}
+>
+  📄 View / Download Certificate
+</button>
+
+
+      <button
+        className="result-btn"
+        style={{ marginTop: 20 }}
+        onClick={() => navigate("/")}
+      >
+        Back to Dashboard
+      </button>
+    </div>
   );
 };
 

@@ -1,0 +1,224 @@
+/* ================= GENERAL ================= */
+.profile-page {
+  max-width: 1200px;
+  margin: auto;
+  padding: 24px;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.loading {
+  text-align: center;
+  font-size: 18px;
+  padding: 40px;
+}
+
+/* ================= HEADER ================= */
+.profile-header {
+  display: flex;
+  gap: 24px;
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  margin-bottom: 32px;
+}
+
+.profile-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #e5e7eb;
+}
+
+.profile-info h1 {
+  margin: 0;
+  font-size: 26px;
+}
+
+.profile-info p {
+  margin: 6px 0;
+  color: #6b7280;
+}
+
+.profile-stats {
+  display: flex;
+  gap: 20px;
+  margin-top: 14px;
+}
+
+.profile-stats div {
+  background: #f3f4f6;
+  padding: 10px 16px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.profile-stats strong {
+  font-size: 18px;
+  display: block;
+}
+
+.logout-btn {
+  margin-top: 16px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.logout-btn:hover {
+  background: #dc2626;
+}
+
+/* ================= SECTIONS ================= */
+.section {
+  margin-bottom: 40px;
+}
+
+.section h2 {
+  font-size: 22px;
+  margin-bottom: 16px;
+}
+
+/* ================= COURSES ================= */
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.course-card {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
+  padding: 16px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.course-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+}
+
+.category-img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+.course-card h3 {
+  font-size: 18px;
+  margin: 8px 0;
+}
+
+.course-card p {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* ================= CERTIFICATE BUTTON ================= */
+.generate-cert-btn {
+  margin-top: 10px;
+  width: 100%;
+  padding: 10px;
+  background: #10b981;
+  border: none;
+  color: white;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.generate-cert-btn:hover {
+  background: #059669;
+}
+
+.cert-exists {
+  margin-top: 10px;
+  color: #16a34a;
+  font-weight: 600;
+}
+
+/* ================= CERTIFICATES ================= */
+.certificates-section h2 {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.no-cert-text {
+  color: #777;
+  font-style: italic;
+}
+
+.certificates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.certificate-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+  padding: 20px;
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.certificate-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.cert-thumbnail img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  background: #f0f0f0;
+}
+
+.cert-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #222;
+}
+
+.download-cert-btn {
+  background: #4f46e5;
+  color: #fff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.download-cert-btn:hover {
+  background: #3730a3;
+  transform: translateY(-2px);
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+  .profile-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .profile-stats {
+    justify-content: center;
+  }
+}

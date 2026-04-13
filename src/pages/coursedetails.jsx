@@ -3,12 +3,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import "../styles/courseDetails.css";
 import axios from "axios";
 import { API } from "../api/config";
-import LoginPrompt from "../components/loginprompt";
 
 const CourseDetails = () => {
   const { courseId } = useParams();
-const getResumeKey = (courseId, lessonId) =>
-  `resume_course_${courseId}_lesson_${lessonId}`;
+  const getResumeKey = (courseId, lessonId) =>
+    `resume_course_${courseId}_lesson_${lessonId}`;
 
   const navigate = useNavigate();
   const [resources, setResources] = useState([]);
@@ -25,7 +24,8 @@ const getResumeKey = (courseId, lessonId) =>
   const [finalPrice, setFinalPrice] = useState(0);
 
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-  
+  const [examStatus, setExamStatus] = useState(""); // "" | "passed"
+
   const [course, setCourse] = useState(null);
   const [currentLesson, setCurrentLesson] = useState(null);
   const [currentVideo, setCurrentVideo] = useState(null);
@@ -100,10 +100,10 @@ const getResumeKey = (courseId, lessonId) =>
     if (!token) return navigate("/login");
 
     try {
-       if (!isLoggedIn) {
-      setShowLoginPrompt(true);
-      return;
-    }
+      if (!isLoggedIn) {
+        setShowLoginPrompt(true);
+        return;
+      }
       const loaded = await loadRazorpayScript();
       if (!loaded) return alert("Razorpay SDK failed to load. Check your internet.");
 
@@ -421,32 +421,32 @@ const getResumeKey = (courseId, lessonId) =>
     if (!token) navigate("/login");
     else navigate("/subscription");
   };
-const handleTimeUpdate = () => {
-  if (!videoRef.current || !currentLesson?.id) return;
+  const handleTimeUpdate = () => {
+    if (!videoRef.current || !currentLesson?.id) return;
 
-  const currentTime = videoRef.current.currentTime;
+    const currentTime = videoRef.current.currentTime;
 
-  localStorage.setItem(
-    getResumeKey(courseId, currentLesson.id),
-    currentTime
-  );
-};
-useEffect(() => {
-  if (!currentLesson?.id) return;
+    localStorage.setItem(
+      getResumeKey(courseId, currentLesson.id),
+      currentTime
+    );
+  };
+  useEffect(() => {
+    if (!currentLesson?.id) return;
 
-  const savedTime = Number(
-    localStorage.getItem(`resume_${currentLesson.id}`)
-  );
+    const savedTime = Number(
+      localStorage.getItem(`resume_${currentLesson.id}`)
+    );
 
-  // ✅ Show resume only if meaningful
-  if (savedTime && savedTime > 10) {
-    setResumeTime(savedTime);
-    setShowResumeBtn(true);
-  } else {
-    setResumeTime(0);
-    setShowResumeBtn(false);
-  }
-}, [currentLesson]);
+    // ✅ Show resume only if meaningful
+    if (savedTime && savedTime > 10) {
+      setResumeTime(savedTime);
+      setShowResumeBtn(true);
+    } else {
+      setResumeTime(0);
+      setShowResumeBtn(false);
+    }
+  }, [currentLesson]);
 
   /* ================= EFFECTS ================= */
   useEffect(() => {
@@ -510,63 +510,137 @@ useEffect(() => {
 
 
   // ✅ USE IT HERE
-const markLessonCompleted = async (lessonId) => {
-  if (!lessonId) return;
+  const markLessonCompleted = async (lessonId) => {
+    if (!lessonId) return;
 
-  try {
-    await axios.post(
-      API.LESSON_COMPLETED,
-      { lesson_id: lessonId },
-      {
-        headers: { Authorization: `Bearer ${token}` },
+    try {
+      await axios.post(
+        API.LESSON_COMPLETED,
+        { lesson_id: lessonId },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      // ✅ Always re-fetch from backend
+      fetchProgress();
+
+    } catch (err) {
+      console.error("Lesson completion error:", err);
+    }
+  };
+
+
+  const handleExamClick = async () => {
+    if (!token) {
+      alert("Please login first");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const res = await axios.get(API.START_EXAM(courseId), { headers: { Authorization: `Bearer ${token}` }, params: { retry: 0 } });
+      if (res.data.status === "allowed") {
+        navigate(`/examination/${courseId}`);
       }
-    );
+    } catch (err) {
+      console.error("Exam access error:", err.response || err);
+      if (err.response?.status === 403 && err.response.data.status === "passed") {
+        setExamStatus("passed");
+      } else if (err.response?.status === 403) {
+        alert("❌ Complete all lessons to unlock the exam");
+      } else if (err.response?.status === 400) {
+        alert(err.response.data.detail || "Bad Request");
+      } else {
+        alert("Failed to check exam access");
+      }
+    }
+  };
 
-    // ✅ Always re-fetch from backend
+  const handleVideoEnd = async () => {
+    await markLessonCompleted(currentLesson.id);
+
+    // wait 1–2 seconds before allowing exam
+    setTimeout(() => {
+      handleExamClick();
+    }, 1500);
+  };
+
+  const fetchExamStatus = async () => {
+    if (!token) return;
+
+    try {
+      const res = await axios.get(API.EXAM_STATUS(courseId), {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setExamStatus(res.data.status); // passed / failed / not_attempted / in_progress
+    } catch (err) {
+      console.error("Failed to fetch exam status", err.response || err);
+    }
+  };
+
+  // Call this on mount or when enrollment changes
+  useEffect(() => {
+    if (isEnrolled) fetchExamStatus();
+  }, [isEnrolled]);
+
+  useEffect(() => {
     fetchProgress();
 
-  } catch (err) {
-    console.error("Lesson completion error:", err);
-  }
-};
+    if (progress.is_completed) {
+      fetchExamStatus();
+    }
+  }, [fetchProgress, progress.is_completed, fetchExamStatus]);
 
-
-const handleVideoEnd = () => {
-  if (!currentLesson?.id) return;
-
-  localStorage.removeItem(`resume_${currentLesson.id}`);
-  setResumeTime(0);
-  setShowResumeBtn(false);
-
-  markLessonCompleted(currentLesson.id);
-};
-
-const handleExamClick = async () => {
+  // Inside your CourseDetails.jsx component, before the return:
+  const handleDownloadCertificate = async () => {
   const token = localStorage.getItem("access");
-
   if (!token) {
-    alert("Please login first");
     navigate("/login");
     return;
   }
 
+  if (!course || !course.title) {
+    alert("Course details not loaded yet.");
+    return;
+  }
+
   try {
-    const res = await axios.get(API.START_EXAM(courseId), {
+    // ✅ Make sure API.DOWNLOAD_CERTIFICATE is a URL string
+    const url = API.DOWNLOAD_CERTIFICATE(courseId);
+
+    const res = await axios.get(url, {
       headers: { Authorization: `Bearer ${token}` },
+      responseType: "blob", // important for file download
     });
 
-    console.log("Exam access success:", res.data);
-    navigate(`/examination/${courseId}`);
-  } catch (err) {
-    console.error("Exam access error:", err.response || err);
+    if (!res.data || res.data.size === 0) {
+      alert("Certificate is not available yet.");
+      return;
+    }
 
-    if (err.response?.status === 401) {
-      alert("Session expired or invalid token. Please login again.");
-      navigate("/login");
-    } else if (err.response?.status === 403) {
-      alert("❌ Complete all lessons to unlock the exam");
+    // Create a blob and download
+    const blob = new Blob([res.data], { type: "application/pdf" });
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.setAttribute("download", `Certificate_${course.title}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(downloadUrl);
+  } catch (err) {
+    console.error("Certificate download failed", err);
+
+    if (err.response) {
+      const status = err.response.status;
+      const detail = err.response.data.detail || "Unknown error";
+      if (status === 403) alert(`Cannot download: ${detail}`);
+      else if (status === 404) alert("Certificate file not found. Please generate first.");
+      else alert(`Error ${status}: ${detail}`);
     } else {
-      alert("Failed to check exam access");
+      alert("Failed to download certificate. Please try again.");
     }
   }
 };
@@ -714,45 +788,74 @@ const handleExamClick = async () => {
           </ul>
         </div>
         {isEnrolled && (
-          <><h1>Course Details</h1><div style={{ margin: "15px 0" }}>
-            <div
-              style={{
-                width: "100%",
-                height: "12px",
-                background: "#e0e0e0",
-                borderRadius: "10px",
-                overflow: "hidden",
-                marginBottom: "10px",
-              }}
-            >
+          <div className="course-progress-section">
+            <h2>Course Progress</h2>
+
+            {/* ===== Progress Bar ===== */}
+            <div style={{ margin: "15px 0" }}>
               <div
                 style={{
-                  width:
-                    progress.total_lessons > 0
-                      ? `${(progress.completed_lessons / progress.total_lessons) * 100}%`
-                      : "0%",
-                  height: "100%",
-                  background: "#4caf50",
+                  width: "100%",
+                  height: "12px",
+                  background: "#e0e0e0",
                   borderRadius: "10px",
-                  transition: "width 0.4s ease",
+                  overflow: "hidden",
+                  marginBottom: "10px",
                 }}
-              />
+              >
+                <div
+                  style={{
+                    width:
+                      progress.total_lessons > 0
+                        ? `${(progress.completed_lessons / progress.total_lessons) * 100}%`
+                        : "0%",
+                    height: "100%",
+                    background: "#4caf50",
+                    borderRadius: "10px",
+                    transition: "width 0.4s ease",
+                  }}
+                />
+              </div>
+              <p>
+                {progress.completed_lessons} / {progress.total_lessons} lessons completed
+              </p>
             </div>
 
-            <p>
-              {progress.completed_lessons} / {progress.total_lessons} lessons completed
-            </p>
+            {/* ===== Exam & Certificate Section ===== */}
+            <div className="exam-section" style={{ marginTop: 20 }}>
+              {progress.is_completed ? (
+                <>
+                  {examStatus === "passed" ? (
+                    <div>
+                      <p style={{ color: "green", fontWeight: "bold" }}>
+                        ✅ You have already passed the exam! Your certificate is available.
+                      </p>
 
-          </div></>
+                      <button
+                        onClick={handleDownloadCertificate}
+                        style={{ marginRight: 10 }}
+                      >
+                        📄 Download Certificate
+                      </button>
+
+                      <button onClick={() => navigate("/user/profile")}>
+                        Go to Profile
+                      </button>
+                    </div>
+                  ) : (
+                    <button className="exam-btn" onClick={handleExamClick}>
+                      Take Examination
+                    </button>
+                  )}
+                </>
+              ) : (
+                <p style={{ color: "#555" }}>
+                  🔒 Complete all lessons to unlock the examination
+                </p>
+              )}
+            </div>
+          </div>
         )}
-{progress.is_completed ? (
-<button className="exam-btn" onClick={handleExamClick}>
-  Take Examination
-</button>
-
-) : (
-  <p>🔒 Complete all lessons to unlock the examination</p>
-)}
 
 
       </div>

@@ -1,208 +1,176 @@
-/* --------------------------
-  Wishlist Page Container
--------------------------- */
+/* wishlist.css */
+
+/* ================= PAGE CONTAINER ================= */
 .wishlist-page {
-  padding: 50px 25px;
-  background: #f0f2f5;
-  min-height: 100vh;
-  font-family: 'Poppins', sans-serif;
+  padding: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: 'Arial', sans-serif;
 }
 
-/* Page Heading */
 .wishlist-page h1 {
   text-align: center;
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 35px;
+  margin-bottom: 30px;
+  color: #333;
+  font-size: 2rem;
 }
 
-/* --------------------------
-  Wishlist Grid
--------------------------- */
+/* ================= EMPTY STATE ================= */
+.wishlist-page p {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+/* ================= WISHLIST GRID ================= */
 .wishlist-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
 }
 
-/* --------------------------
-  Wishlist Card
--------------------------- */
+/* ================= WISHLIST CARD ================= */
 .wishlist-card {
-  background: linear-gradient(145deg, #ffffff, #e6ebf2);
-  border-radius: 15px;
-  padding: 20px;
-  text-align: center;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .wishlist-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.1);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
 }
 
-/* Course Image */
 .wishlist-card img {
   width: 100%;
-  height: 170px;
+  height: 150px;
   object-fit: cover;
-  border-radius: 12px;
-  margin-bottom: 14px;
-  transition: transform 0.3s ease;
 }
 
-.wishlist-card img:hover {
-  transform: scale(1.08);
-}
-
-/* Course Title */
 .wishlist-card h3 {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin: 10px 0 6px;
+  font-size: 18px;
+  margin: 10px;
+  color: #333;
 }
 
-/* Course Short Description */
 .wishlist-card p {
-  font-size: 0.9rem;
-  color: #4b5563;
-  line-height: 1.5;
-  max-height: 45px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 14px;
+  color: #555;
+  margin: 0 10px 10px 10px;
+  flex-grow: 1;
 }
 
-/* --------------------------
-  Action Buttons
--------------------------- */
+/* ================= ACTION BUTTONS ================= */
 .wishlist-actions {
   display: flex;
-  justify-content: space-around;
-  margin-top: 16px;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-top: 1px solid #eee;
 }
 
-/* View Button */
-/* --------------------------
-  View Button (Rounded/Pill)
--------------------------- */
 .view-btn {
-  background: #10b981; /* green */
-  color: white;
-  padding: 10px 22px; /* more horizontal padding for pill shape */
-  border-radius: 50px; /* fully rounded */
+  background: #4caf50;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
   text-decoration: none;
-  font-size: 0.9rem;
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  font-size: 14px;
+  transition: background 0.2s;
 }
 
 .view-btn:hover {
-  background: #059669; /* darker green on hover */
-  transform: scale(1.05); /* subtle grow effect */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* soft shadow */
+  background: #43a047;
 }
 
-/* --------------------------
-  Remove Button (Square / Boxy)
--------------------------- */
-/* Trash Icon Button */
 .remove-icon-btn {
-  background: #f43f5e; /* red */
-  color: white;
-  font-size: 1.2rem; /* larger for icon */
+  background: transparent;
   border: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%; /* circular button */
-  display: flex;
-  justify-content: center;
-  align-items: center;
   cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+  font-size: 18px;
+  transition: color 0.2s;
 }
 
 .remove-icon-btn:hover {
-  background: #be123c; /* darker red on hover */
-  transform: scale(1.1);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.18);
+  color: red;
 }
 
-/* --------------------------
-  Login Prompt Modal
--------------------------- */
+/* ================= LOGIN PROMPT MODAL ================= */
 .login-prompt-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(30, 41, 59, 0.6);
+  background: rgba(0,0,0,0.5);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9999;
+  z-index: 1000;
 }
 
 .login-prompt-box {
-  background: #ffffff;
-  padding: 28px 24px;
-  border-radius: 14px;
+  background: #fff;
+  padding: 30px 40px;
+  border-radius: 12px;
   text-align: center;
-  max-width: 380px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
 }
 
 .login-prompt-box p {
-  font-size: 1rem;
-  color: #1e293b;
-  margin-bottom: 22px;
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 20px;
 }
 
 .login-btn {
-  background: #4f46e5;
+  background: #2196f3;
   color: #fff;
   border: none;
-  padding: 12px 22px;
-  border-radius: 10px;
+  padding: 8px 20px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 0.95rem;
-  font-weight: 500;
-  transition: background 0.3s ease;
+  font-size: 15px;
+  transition: background 0.2s;
 }
 
 .login-btn:hover {
-  background: #3730a3;
+  background: #1976d2;
 }
 
-/* --------------------------
-  Responsive Adjustments
--------------------------- */
+/* ================= RESPONSIVE ================= */
 @media (max-width: 768px) {
   .wishlist-grid {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   }
+
   .wishlist-card img {
-    height: 150px;
+    height: 120px;
   }
 }
 
 @media (max-width: 480px) {
-  .wishlist-grid {
-    grid-template-columns: 1fr;
-  }
-  .wishlist-card {
-    padding: 15px;
-  }
   .wishlist-card h3 {
-    font-size: 1rem;
+    font-size: 16px;
   }
+
   .wishlist-card p {
-    font-size: 0.85rem;
+    font-size: 13px;
+  }
+
+  .view-btn {
+    font-size: 13px;
+    padding: 5px 10px;
+  }
+
+  .remove-icon-btn {
+    font-size: 16px;
   }
 }

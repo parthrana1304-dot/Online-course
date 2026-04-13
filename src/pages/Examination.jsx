@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API } from "../api/config";
 import { useNavigate, useParams } from "react-router-dom";
-import "../styles/exam.css";
 
 const Examination = () => {
   const { courseId } = useParams();
@@ -12,54 +11,102 @@ const Examination = () => {
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(true);
-  const [selectedOption, setSelectedOption] = useState("");
+  const [examStatus, setExamStatus] = useState(""); 
+  // allowed | failed | passed
 
-  // Load exam questions
+  /* ================= AUTH CHECK ================= */
   useEffect(() => {
     if (!token) {
       navigate("/login");
-      return;
     }
+  }, [token, navigate]);
 
-    const loadExam = async () => {
-      try {
-        const res = await axios.get(API.START_EXAM(courseId), {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setQuestions(res.data.questions || []);
-      } catch (err) {
-        if (err.response?.status === 403) {
-          alert("❌ Complete all lessons first!");
-          navigate(API.COURSE_BY_ID(courseId));
-        } else {
-          alert("Failed to load exam");
-        }
-      } finally {
-        setLoading(false);
+  /* ================= LOAD EXAM ================= */
+  const loadExam = async (retry = false) => {
+    setLoading(true);
+
+    try {
+      const res = await axios.get(API.START_EXAM(courseId), {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: retry ? { retry: 1 } : {},
+      });
+
+      console.log("EXAM RESPONSE:", res.data);
+
+      /* ===== HANDLE STATUS FROM BACKEND ===== */
+      if (res.data.status === "passed") {
+        navigate(`/course/${courseId}/success`);
+        return;
       }
-    };
 
-    loadExam();
-  }, [courseId, token, navigate]);
+      if (res.data.status === "failed") {
+        setExamStatus("failed");
+        setQuestions([]);
+        return;
+      }
 
-  // Handle answer selection
-  const handleChange = (qid, value) => {
-    setAnswers((prev) => ({ ...prev, [qid]: value }));
+      /* ===== LOAD QUESTIONS ===== */
+      const loadedQuestions =
+        res.data.questions ||
+        res.data.data ||
+        res.data.exam?.questions ||
+        [];
+
+      setQuestions(loadedQuestions.slice(0, 10)); // limit to 20 questions
+      setAnswers({});
+      setExamStatus("allowed");
+    } catch (err) {
+      console.error("START EXAM ERROR:", err);
+
+      const status = err.response?.status;
+      const backendStatus = err.response?.data?.status;
+
+      if (status === 401) {
+        navigate("/login");
+      } else if (backendStatus === "passed") {
+        navigate(`/course/${courseId}/success`);
+      } else if (backendStatus === "failed") {
+        setExamStatus("failed");
+        setQuestions([]);
+      } else {
+        alert("Unable to start exam. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Submit exam
+  useEffect(() => {
+    loadExam();
+  }, []);
+
+  /* ================= SELECT ANSWER ================= */
+  const handleSelect = (questionId, value) => {
+    setAnswers((prev) => ({
+      ...prev,
+      [questionId]: value,
+    }));
+  };
+
+  /* ================= SUBMIT EXAM ================= */
   const submitExam = async () => {
-    if (!selectedOption) {
-      alert("Please select an answer");
-      return;
-    }
+    if (questions.length === 0) return;
+
+    const payload = Object.entries(answers).map(
+      ([questionId, answer]) => ({
+        question_id: Number(questionId),
+        answer,
+      })
+    );
 
     try {
       const res = await axios.post(
-        "http://127.0.0.1:8000/api/exams/submit/",
+        API.SUBMIT_EXAM,
         {
           course_id: courseId,
-          selected_option: selectedOption,
+          answers: payload,
         },
         {
           headers: {
@@ -68,64 +115,88 @@ const Examination = () => {
         }
       );
 
-      if (res.data.passed === true) {
+      console.log("SUBMIT RESPONSE:", res.data);
+
+      if (res.data.passed) {
         navigate(`/course/${courseId}/success`);
       } else {
-        navigate(`/course/${courseId}/failed`);
+        setExamStatus("failed");
+        setQuestions([]);
       }
     } catch (err) {
-      console.error("Submit exam error:", err.response?.data || err);
-      alert("Exam submission failed");
+      console.error("SUBMIT ERROR:", err);
+      alert("Exam submission failed. Please try again.");
     }
   };
 
-  if (loading) return <p>Loading exam...</p>;
+  if (loading) {
+    return <p style={{ textAlign: "center" }}>Loading exam...</p>;
+  }
 
   return (
     <div className="exam-wrapper">
       <h1>Examination</h1>
 
-      {questions.length === 0 && <p>No questions available.</p>}
+      {/* ================= EXAM QUESTIONS ================= */}
+      {examStatus === "allowed" && (
+        <>
+          {questions.length === 0 && (
+            <p>No questions available for this exam.</p>
+          )}
 
-      {questions.map((q) => (
-        <div key={q.id} className="question-card" style={{ marginBottom: "20px" }}>
-          <h4>{q.text}</h4>
+          {questions.map((q, index) => (
+            <div key={q.id || index} className="question-card">
+              <h4>
+                {index + 1}. {q.text || q.question}
+              </h4>
 
-          {q.question_type === "MCQ"
-            ? ["A", "B", "C", "D"]
-              .filter((letter) => q[`option_${letter.toLowerCase()}`])
-              .map((letter) => (
-                <label key={letter} style={{ display: "block", margin: "5px 0" }}>
+              {["A", "B", "C", "D"].map((letter) => (
+                <label key={letter} style={{ display: "block" }}>
                   <input
                     type="radio"
-                    name="answer"
-                    value={letter}
-                    checked={selectedOption === letter}
-                    onChange={() => setSelectedOption(letter)}
+                    name={`q-${q.id}`}
+                    checked={answers[q.id] === letter}
+                    onChange={() => handleSelect(q.id, letter)}
                   />
-
-                  {q[`option_${letter.toLowerCase()}`]}
+                  {q[`option_${letter.toLowerCase()}`] ||
+                    q[`option${letter}`]}
                 </label>
-              ))
-            : (
-              <input
-                type="text"
-                value={answers[q.id] || ""}
-                onChange={(e) => handleChange(q.id, e.target.value)}
-                placeholder="Your answer"
-                style={{ width: "100%", padding: "5px", marginTop: "5px" }}
-              />
-            )}
-        </div>
-      ))}
+              ))}
+            </div>
+          ))}
 
-      {questions.length > 0 && (
-        <button
-          onClick={submitExam}
-          style={{ marginTop: "20px", padding: "10px 20px" }}
-        >
-          Submit Exam
-        </button>
+          {questions.length > 0 && (
+            <button
+              onClick={submitExam}
+              style={{ marginTop: 20 }}
+            >
+              Submit Exam
+            </button>
+          )}
+        </>
+      )}
+
+      {/* ================= FAILED ================= */}
+      {examStatus === "failed" && (
+        <>
+          <p style={{ color: "red", fontWeight: "bold" }}>
+            ❌ You failed the exam. Try again.
+          </p>
+
+          <button
+            onClick={() => loadExam(true)}
+            style={{
+              marginTop: 20,
+              background: "#f44336",
+              color: "#fff",
+              padding: "10px 20px",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            Retry Exam
+          </button>
+        </>
       )}
     </div>
   );
