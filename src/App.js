@@ -12,7 +12,6 @@ import MainLayout from "./layouts/MainLayout";
 import Subscription from "./pages/Subscription";
 import AboutPage from "./pages/AboutPage";
 import Contact from "./pages/contact";
-import AdBanner from "./components/adBanner";
 import GoogleLoginButton from "./components/googleloginbtn";
 import Examination from "./pages/Examination";
 import ExamFailed from "./pages/Examfail";
@@ -56,14 +55,6 @@ function App() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<Contact />} />
 
-        <Route
-          path="/add"
-          element={
-            <ProtectedRoute>
-              <AdBanner />
-            </ProtectedRoute>
-          }
-        />
 
         <Route
           path="/user/profile"

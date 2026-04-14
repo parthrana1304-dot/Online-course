@@ -38,6 +38,7 @@ export const API = {
 
   //COUPON
   APPLY_COUPON : `${API_BASE}/api/apply-coupon/`,
+  COURSE_COUPONS : (courseId) => `${API_BASE}/api/coupon/${courseId}/`,
   ACTIVE_COUPON : `${API_BASE}/api/coupons/active/`,
   APPLY_VALID_COUPON : `${API_BASE}/api/coupons/validate/`,
 

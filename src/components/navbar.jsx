@@ -97,7 +97,7 @@ const Navbar = () => {
       <div className="navbar-container">
         {/* LOGO */}
         <Link to="/" className="logo">
-          EduSite
+          🎓EduPro
         </Link>
 
         {/* SEARCH */}

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/home.css";
 import { API } from "../api/config";
-import AdBanner from "../components/adBanner";
 import WelcomeHeader from "../components/welcomeheader";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 /* ================= CAROUSEL IMAGES ================= */
@@ -190,7 +189,6 @@ const HomePage = () => {
         </div>
       </section>
 
-      <AdBanner position="homepage" />
     </div>
   );
 };

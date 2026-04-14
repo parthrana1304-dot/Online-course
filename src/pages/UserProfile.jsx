@@ -121,22 +121,24 @@ const UserProfile = () => {
   };
 
   // Generate certificate by calling API
-  const handleGenerateCertificate = async (courseId) => {
-    try {
-      const res = await axios.get(API.GENERATE_CERTIFICATE(courseId), {
+const handleGenerateCertificate = async (courseId) => {
+  try {
+    await axios.post(
+      API.GENERATE_CERTIFICATE(courseId),
+      {},
+      {
         headers: { Authorization: `Bearer ${token}` },
-        responseType: "blob", // optional if API returns PDF
-      });
+      }
+    );
 
-      alert("Certificate generated successfully 🎉");
-      // Reload certificates after generating
-      loadCertificates();
-    } catch (err) {
-      console.error(err);
-      alert("Failed to generate certificate");
-    }
-  };
+    alert("Certificate generated successfully 🎉");
 
+    loadCertificates(); // reload certificates
+  } catch (err) {
+    console.error(err);
+    alert("Failed to generate certificate");
+  }
+};
   /* ================= LOAD PROFILE ================= */
   const loadCertificates = async () => {
     try {
@@ -295,8 +297,10 @@ const UserProfile = () => {
                 key={cert.id ?? `${cert.course}-${index}`}
                 className="certificate-card"
               >
-                <img src={"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR-QKzBAHaZ2DuXFHig-yThJLoEC3R3dJ05qg&s"} alt="Certificate" />
-                <p>{cert.title || "Course Certificate"}</p>
+<img
+  src={getImageUrl(cert.thumbnail)}
+  alt="Certificate"
+/>                <p>{cert.title || "Course Certificate"}</p>
                 <button
                   className="download-cert-btn"
                   onClick={() => handleDownloadCertificate(cert)}

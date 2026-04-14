@@ -37,6 +37,7 @@ const CourseDetails = () => {
   const [comment, setComment] = useState("");
   const [avgRating, setAvgRating] = useState(0);
 
+  const [availableCoupons, setAvailableCoupons] = useState([]);
   const videoRef = useRef();
 
   /* ================= LOAD COURSE ================= */
@@ -269,47 +270,118 @@ const CourseDetails = () => {
   };
 
   /* ================= COUPON ================= */
-  const applyCoupon = async () => {
-    if (!couponCode) {
-      setCouponError("Please enter a coupon code");
+// Reset price when course changes
+useEffect(() => {
+  if (course?.price) {
+    setFinalPrice(Number(course.price));
+    setAppliedCoupon(null);
+    setCouponCode("");
+    setCouponError("");
+  }
+}, [course]);
+
+// Fetch Active Coupons (Optional)
+useEffect(() => {
+  if (!course?.id) return;
+
+  fetch(API.COURSE_COUPONS(course.id))
+    .then((res) => res.json())
+    .then((data) => {
+      if (Array.isArray(data)) {
+        setAvailableCoupons(data);
+      } else {
+        console.error("Invalid response:", data);
+        setAvailableCoupons([]);
+      }
+    })
+    .catch((err) => {
+      console.error("Coupon fetch error:", err);
+      setAvailableCoupons([]);
+    });
+
+}, [course?.id]);
+
+
+// ===============================
+// ✅ APPLY COUPON (FIXED VERSION)
+// ===============================
+const applyCoupon = async () => {
+
+  if (!couponCode) {
+    setCouponError("Please select a coupon");
+    return;
+  }
+
+  if (!course?.id) {
+    setCouponError("Course not loaded");
+    return;
+  }
+
+  try {
+    setLoading(true);
+    setCouponError("");
+
+    const res = await fetch(API.APPLY_VALID_COUPON, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        code: couponCode,
+        course_id: course.id   // ✅ FIXED (VERY IMPORTANT)
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.valid) {
+      setCouponError(data.message || "Invalid coupon for this course");
+      setAppliedCoupon(null);
+      setFinalPrice(Number(course.price));
       return;
     }
 
-    try {
-      const res = await fetch(API.APPLY_VALID_COUPON, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ code: couponCode }),
-      });
+    const coupon = data.coupon;
+    let discountedPrice = Number(course.price);
 
-      const data = await res.json();
-
-      if (!res.ok || !data.valid) {
-        setCouponError(data.message || "Invalid coupon");
-        setAppliedCoupon(null);
-        setFinalPrice(course.price);
-        return;
-      }
-
-      const coupon = data.coupon;
-      let discountedPrice = course.price;
-
-      if (coupon.discount_type === "percentage") {
-        discountedPrice -= (discountedPrice * coupon.discount_value) / 100;
-      } else if (coupon.discount_type === "flat") {
-        discountedPrice -= coupon.discount_value;
-      }
-
-      setAppliedCoupon(coupon);
-      setFinalPrice(Math.max(0, discountedPrice));
-      setCouponError("");
-    } catch (err) {
-      console.error(err);
-      setCouponError("Server error while applying coupon");
+    // ✅ Percentage Discount
+    if (coupon.discount_type === "percentage") {
+      discountedPrice -=
+        (discountedPrice * Number(coupon.discount_value)) / 100;
     }
-  };
+
+    // ✅ Fixed / Flat Discount
+    else if (
+      coupon.discount_type === "fixed" ||
+      coupon.discount_type === "flat"
+    ) {
+      discountedPrice -= Number(coupon.discount_value);
+    }
+
+    // Prevent negative price
+    discountedPrice = Math.max(0, discountedPrice);
+
+    setAppliedCoupon(coupon);
+    setFinalPrice(discountedPrice);
+
+  } catch (err) {
+    console.error("Coupon error:", err);
+    setCouponError("Server error. Try again.");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+// ===============================
+// Remove Coupon
+// ===============================
+const removeCoupon = () => {
+  setAppliedCoupon(null);
+  setCouponCode("");
+  setFinalPrice(Number(course.price));
+  setCouponError("");
+};
 
   useEffect(() => {
     if (course?.price) setFinalPrice(course.price);
@@ -557,15 +629,15 @@ const CourseDetails = () => {
     }
   };
 
-  const handleVideoEnd = async () => {
-    await markLessonCompleted(currentLesson.id);
+const handleVideoEnd = async () => {
+  await markLessonCompleted(currentLesson.id);
 
-    // wait 1–2 seconds before allowing exam
-    setTimeout(() => {
-      handleExamClick();
-    }, 1500);
-  };
+  fetchProgress();
 
+  if (progress.completed_lessons + 1 === progress.total_lessons) {
+    alert("🎉 All lessons completed! You can now take the exam.");
+  }
+};
   const fetchExamStatus = async () => {
     if (!token) return;
 
@@ -595,55 +667,55 @@ const CourseDetails = () => {
 
   // Inside your CourseDetails.jsx component, before the return:
   const handleDownloadCertificate = async () => {
-  const token = localStorage.getItem("access");
-  if (!token) {
-    navigate("/login");
-    return;
-  }
-
-  if (!course || !course.title) {
-    alert("Course details not loaded yet.");
-    return;
-  }
-
-  try {
-    // ✅ Make sure API.DOWNLOAD_CERTIFICATE is a URL string
-    const url = API.DOWNLOAD_CERTIFICATE(courseId);
-
-    const res = await axios.get(url, {
-      headers: { Authorization: `Bearer ${token}` },
-      responseType: "blob", // important for file download
-    });
-
-    if (!res.data || res.data.size === 0) {
-      alert("Certificate is not available yet.");
+    const token = localStorage.getItem("access");
+    if (!token) {
+      navigate("/login");
       return;
     }
 
-    // Create a blob and download
-    const blob = new Blob([res.data], { type: "application/pdf" });
-    const downloadUrl = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = downloadUrl;
-    link.setAttribute("download", `Certificate_${course.title}.pdf`);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.URL.revokeObjectURL(downloadUrl);
-  } catch (err) {
-    console.error("Certificate download failed", err);
-
-    if (err.response) {
-      const status = err.response.status;
-      const detail = err.response.data.detail || "Unknown error";
-      if (status === 403) alert(`Cannot download: ${detail}`);
-      else if (status === 404) alert("Certificate file not found. Please generate first.");
-      else alert(`Error ${status}: ${detail}`);
-    } else {
-      alert("Failed to download certificate. Please try again.");
+    if (!course || !course.title) {
+      alert("Course details not loaded yet.");
+      return;
     }
-  }
-};
+
+    try {
+      // ✅ Make sure API.DOWNLOAD_CERTIFICATE is a URL string
+      const url = API.DOWNLOAD_CERTIFICATE(courseId);
+
+      const res = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: "blob", // important for file download
+      });
+
+      if (!res.data || res.data.size === 0) {
+        alert("Certificate is not available yet.");
+        return;
+      }
+
+      // Create a blob and download
+      const blob = new Blob([res.data], { type: "application/pdf" });
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.setAttribute("download", `Certificate_${course.title}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (err) {
+      console.error("Certificate download failed", err);
+
+      if (err.response) {
+        const status = err.response.status;
+        const detail = err.response.data.detail || "Unknown error";
+        if (status === 403) alert(`Cannot download: ${detail}`);
+        else if (status === 404) alert("Certificate file not found. Please generate first.");
+        else alert(`Error ${status}: ${detail}`);
+      } else {
+        alert("Failed to download certificate. Please try again.");
+      }
+    }
+  };
 
   if (loading) return <p>Loading...</p>;
   if (!course) return <p>Course not found</p>;
@@ -747,46 +819,48 @@ const CourseDetails = () => {
             </div>
           )}
         </section>
-        <div className="free-resources">
-          <h2>Downloadable Free Resources</h2>
+        {isEnrolled && (
+          <div className="free-resources">
+            <h2>Downloadable Free Resources</h2>
 
-          {resources.length === 0 && <p>No free resources available.</p>}
+            {resources.length === 0 && <p>No free resources available.</p>}
 
-          <ul>
-            {resources.map((res) => (
-              <li key={res.id} className="resource-item">
-                <a
-                  href={res.file_url}   // ✅ CORRECT FIELD
-                  download              // ✅ FORCE DOWNLOAD
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="resource-link"
-                >
-                  <span className="resource-icon">
-                    {getFileIcon(res.file_url)}
-                  </span>
+            <ul>
+              {resources.map((res) => (
+                <li key={res.id} className="resource-item">
+                  <a
+                    href={res.file_url}
+                    download
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="resource-link"
+                  >
+                    <span className="resource-icon">
+                      {getFileIcon(res.file_url)}
+                    </span>
 
-                  <span className="resource-title">
-                    {res.title}
-                  </span>
-                </a>
+                    <span className="resource-title">
+                      {res.title}
+                    </span>
+                  </a>
 
-                {res.description && (
-                  <p className="resource-desc">{res.description}</p>
-                )}
-
-                <div className="resource-meta">
-                  {res.file_size_kb && (
-                    <span>{res.file_size_kb} KB</span>
+                  {res.description && (
+                    <p className="resource-desc">{res.description}</p>
                   )}
-                  {res.download_count !== undefined && (
-                    <span>⬇ {res.download_count}</span>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
+
+                  <div className="resource-meta">
+                    {res.file_size_kb && (
+                      <span>{res.file_size_kb} KB</span>
+                    )}
+                    {res.download_count !== undefined && (
+                      <span>⬇ {res.download_count}</span>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         {isEnrolled && (
           <div className="course-progress-section">
             <h2>Course Progress</h2>
@@ -904,21 +978,57 @@ const CourseDetails = () => {
 
           {!isEnrolled && (
             <div className="coupon-box">
-              <input
-                type="text"
-                placeholder="Enter coupon code"
-                value={couponCode}
-                onChange={(e) => setCouponCode(e.target.value)}
-              />
-              <button onClick={applyCoupon}>Apply</button>
 
-              {couponError && <p className="coupon-error">{couponError}</p>}
-              {appliedCoupon && (
-                <p className="coupon-success">
-                  Coupon <b>{appliedCoupon.code}</b> applied 🎉
-                </p>
-              )}
-            </div>
+  <div className="coupon-controls">
+    <select
+      className="coupon-select"
+      value={couponCode}
+      onChange={(e) => setCouponCode(e.target.value)}
+      disabled={appliedCoupon !== null}
+    >
+      <option value="">-- Select Coupon --</option>
+
+      {availableCoupons.map((coupon) => (
+        <option key={coupon.code} value={coupon.code}>
+          {coupon.code} (
+          {coupon.discount_type === "percentage"
+            ? `${coupon.discount_value}% OFF`
+            : `₹${coupon.discount_value} OFF`}
+          )
+        </option>
+      ))}
+    </select>
+
+    <button
+      className="coupon-apply-btn"
+      onClick={applyCoupon}
+      disabled={loading}
+    >
+      {loading ? "Applying..." : "Apply"}
+    </button>
+
+    {appliedCoupon && (
+      <button
+        className="coupon-remove-btn"
+        onClick={removeCoupon}
+      >
+        Remove
+      </button>
+    )}
+  </div>
+
+  {couponError && (
+    <p className="coupon-error">
+      {couponError}
+    </p>
+  )}
+
+  {appliedCoupon && (
+    <p className="coupon-success">
+      Coupon <b>{appliedCoupon.code}</b> applied successfully 🎉
+    </p>
+  )}
+</div>
           )}
 
           <h3>What you'll get</h3>
