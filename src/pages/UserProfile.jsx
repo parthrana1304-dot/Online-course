@@ -4,6 +4,7 @@ import axios from "axios"; // ✅ Import axios
 import "../styles/UserProfile.css";
 import { API } from "../api/config";
 import jsPDF from "jspdf";
+import { FaCertificate } from "react-icons/fa";
 
 const BASE_URL = "http://127.0.0.1:8000";
 
@@ -36,7 +37,7 @@ const UserProfile = () => {
 
   // Download certificate as PDF using jsPDF
   const handleDownloadCertificate = (cert) => {
-    
+
     const doc = new jsPDF({
       orientation: "landscape",
       unit: "px",
@@ -121,24 +122,24 @@ const UserProfile = () => {
   };
 
   // Generate certificate by calling API
-const handleGenerateCertificate = async (courseId) => {
-  try {
-    await axios.post(
-      API.GENERATE_CERTIFICATE(courseId),
-      {},
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
+  const handleGenerateCertificate = async (courseId) => {
+    try {
+      await axios.post(
+        API.GENERATE_CERTIFICATE(courseId),
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
-    alert("Certificate generated successfully 🎉");
+      alert("Certificate generated successfully 🎉");
 
-    loadCertificates(); // reload certificates
-  } catch (err) {
-    console.error(err);
-    alert("Failed to generate certificate");
-  }
-};
+      loadCertificates(); // reload certificates
+    } catch (err) {
+      console.error(err);
+      alert("Failed to generate certificate");
+    }
+  };
   /* ================= LOAD PROFILE ================= */
   const loadCertificates = async () => {
     try {
@@ -286,27 +287,34 @@ const handleGenerateCertificate = async (courseId) => {
       </section>
 
       {/* ================= CERTIFICATES ================= */}
-      <section className="section">
-        <h2>My Certificates</h2>
+      <section className="section certificates-section">
+        <h2 className="section-title">🎓 My Certificates</h2>
+
         {certificates.length === 0 ? (
-          <p>No certificates earned yet.</p>
+          <p className="no-cert">No certificates earned yet.</p>
         ) : (
-          <div className="certificates-carousel">
+          <div className="certificates-grid">
             {certificates.map((cert, index) => (
               <div
                 key={cert.id ?? `${cert.course}-${index}`}
                 className="certificate-card"
               >
-<img
-  src={getImageUrl(cert.thumbnail)}
-  alt="Certificate"
-/>                <p>{cert.title || "Course Certificate"}</p>
-                <button
-                  className="download-cert-btn"
-                  onClick={() => handleDownloadCertificate(cert)}
-                >
-                  📄 Download PDF
-                </button>
+                <div className="cert-img-wrapper icon-wrapper">
+                  <FaCertificate className="cert-icon" />
+                </div>
+
+                <div className="cert-content">
+                  <p className="cert-title">
+                    {cert.title || "Course Certificate"}
+                  </p>
+
+                  <button
+                    className="download-cert-btn"
+                    onClick={() => handleDownloadCertificate(cert)}
+                  >
+                    📄 Download
+                  </button>
+                </div>
               </div>
             ))}
           </div>
